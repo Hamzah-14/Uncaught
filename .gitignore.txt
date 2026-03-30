@@ -1,0 +1,12 @@
+# Godot 4+ specific ignores
+.godot/
+*.translation
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Optional: Ignore export templates/builds if you create a builds folder later
+builds/
+exports/

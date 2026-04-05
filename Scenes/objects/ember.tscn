@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dmhaaugx8sdb"]
 
-[ext_resource type="Script" uid="uid://cwis6r0oyefjn" path="res://Scenes/objects/ember.gd" id="1_qkp1t"]
+[ext_resource type="Script" uid="uid://cwis6r0oyefjn" path="res://Scripts/Entities/ember.gd" id="1_qkp1t"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_qkp1t"]
 

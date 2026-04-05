@@ -12,7 +12,7 @@ func setup(game_manager: GameManager) -> void:
 	game_manager.score_updated.connect(_on_score_updated)
 	game_manager.ember_possession_changed.connect(_on_ember_changed)
 	game_manager.bout_ended.connect(_on_bout_ended)
-	game_manager.round_changed.connect(_on_round_changed)
+	#game_manager.round_changed.connect(_on_round_changed)
 
 func _on_round_changed(round_number: int) -> void:
 	if round_number == 1:

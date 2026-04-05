@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://6256wludvhgk"]
+
+[ext_resource type="Script" uid="uid://dypiml14tgn03" path="res://Scripts/main.gd" id="1_jhdhk"]
+[ext_resource type="PackedScene" uid="uid://7drhbq6grd1o" path="res://Scenes/Entities/Player.tscn" id="2_0ds76"]
+[ext_resource type="PackedScene" uid="uid://dydvmd8us6msl" path="res://Scenes/Entities/guardian.tscn" id="2_7dk6h"]
+[ext_resource type="Script" uid="uid://dxctygh10drh6" path="res://Scripts/Core/grid_manager.gd" id="2_bugre"]
+[ext_resource type="Script" uid="uid://cym7bprf4onwo" path="res://Scripts/Ai/csp_generator.gd" id="3_2tw1v"]
+[ext_resource type="Script" uid="uid://2t7iigs5nk3w" path="res://Scripts/Core/game_manager.gd" id="4_0ds76"]
+[ext_resource type="Script" uid="uid://c2kitkphcyk65" path="res://Scripts/Core/world_render.gd" id="5_7dk6h"]
+[ext_resource type="PackedScene" uid="uid://dmhaaugx8sdb" path="res://Scenes/objects/ember.tscn" id="6_2tw1v"]
+[ext_resource type="Script" uid="uid://cmqtvg2gf8q3" path="res://Scripts/debug_overlay.gd" id="7_q3i8e"]
+[ext_resource type="PackedScene" uid="uid://dlnfumyoj7xlk" path="res://Scenes/objects/FloorTile.tscn" id="8_0ds76"]
+[ext_resource type="PackedScene" uid="uid://ct561el8b1aen" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/buildings/neutral/wall_straight.gltf" id="8_2tw1v"]
+[ext_resource type="Script" uid="uid://di2duwirv4xqg" path="res://Scripts/hud.gd" id="12_l0ud6"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7mycd"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_272bh"]
+sky_material = SubResource("ProceduralSkyMaterial_7mycd")
+
+[sub_resource type="Environment" id="Environment_5vw27"]
+background_mode = 2
+sky = SubResource("Sky_272bh")
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="Arena" type="Node3D" unique_id=1875301184 node_paths=PackedStringArray("csp_generator", "game_manager", "grid_manager", "world_render")]
+script = ExtResource("1_jhdhk")
+csp_generator = NodePath("Systems/CSPGenerator")
+game_manager = NodePath("Systems/GameManager")
+grid_manager = NodePath("Systems/GridManager")
+world_render = NodePath("WorldRender")
+
+[node name="Guardian" parent="." unique_id=1940341909 instance=ExtResource("2_7dk6h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+
+[node name="Player" parent="." unique_id=453831029 instance=ExtResource("2_0ds76")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8027172, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 7, 4.5)
+size = 20.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1502416517]
+environment = SubResource("Environment_5vw27")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=830173664]
+metadata/_edit_lock_ = true
+
+[node name="Systems" type="Node" parent="." unique_id=1021027887]
+
+[node name="GridManager" type="Node" parent="Systems" unique_id=945586108]
+script = ExtResource("2_bugre")
+
+[node name="CSPGenerator" type="Node" parent="Systems" unique_id=1426352937 node_paths=PackedStringArray("grid_manager")]
+script = ExtResource("3_2tw1v")
+grid_manager = NodePath("../GridManager")
+width = 30
+height = 30
+
+[node name="GameManager" type="Node" parent="Systems" unique_id=1065981383]
+script = ExtResource("4_0ds76")
+
+[node name="WorldRender" type="Node3D" parent="." unique_id=1138659791 node_paths=PackedStringArray("game_manager", "grid_manager", "csp_generator")]
+script = ExtResource("5_7dk6h")
+game_manager = NodePath("../Systems/GameManager")
+grid_manager = NodePath("../Systems/GridManager")
+csp_generator = NodePath("../Systems/CSPGenerator")
+ember_scene = ExtResource("6_2tw1v")
+floor_mesh = ExtResource("8_0ds76")
+wall_mesh = ExtResource("8_2tw1v")
+
+[node name="DebugLayer" type="CanvasLayer" parent="." unique_id=1527909462]
+
+[node name="DebugOverlay" type="Control" parent="DebugLayer" unique_id=2031543679]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_q3i8e")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1368070183]
+script = ExtResource("12_l0ud6")

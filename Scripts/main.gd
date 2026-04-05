@@ -5,7 +5,8 @@ extends Node3D
 @export var game_manager: GameManager
 @export var grid_manager: GridManager
 @export var world_render: WorldRenderer
- 
+@export var hud: HUD
+
 var _retry_count: int = 0
 var _max_retries: int = 5 # Failsafe
 

@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dmhaaugx8sdb"]
+
+[ext_resource type="Script" uid="uid://cwis6r0oyefjn" path="res://Scenes/objects/ember.gd" id="1_qkp1t"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_qkp1t"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_3a4re"]
+
+[node name="Ember" type="Area3D" unique_id=1546455077]
+collision_layer = 8
+script = ExtResource("1_qkp1t")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1596663912]
+shape = SubResource("SphereShape3D_qkp1t")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=412891514]
+layers = 9
+mesh = SubResource("SphereMesh_3a4re")

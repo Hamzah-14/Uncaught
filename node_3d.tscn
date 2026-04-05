@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://ckib3nkk1xof7"]
+
+[ext_resource type="PackedScene" uid="uid://p5vrpae3krv3" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/tiles/base/hex_grass.gltf" id="1_a202f"]
+
+[node name="Node3D" type="Node3D" unique_id=565636516]
+
+[node name="hex_grass2" parent="." unique_id=528530054 instance=ExtResource("1_a202f")]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=577084427]
+size = Vector3(2, 2, 2.31)

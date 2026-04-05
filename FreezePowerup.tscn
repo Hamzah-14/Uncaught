@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://qvl88j7xiql"]
+
+[ext_resource type="Script" uid="uid://cpiaefrd7yt01" path="res://Scenes/Entities/freeze_powerup.gd" id="1_u5gu6"]
+
+[sub_resource type="PrismMesh" id="PrismMesh_u5gu6"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jxasa"]
+albedo_color = Color(0.015686275, 0.24313726, 1, 1)
+
+[node name="FreezePowerup" type="Area3D" unique_id=1432100876]
+script = ExtResource("1_u5gu6")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1999520736]
+mesh = SubResource("PrismMesh_u5gu6")
+surface_material_override/0 = SubResource("StandardMaterial3D_jxasa")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D" unique_id=2116767147]

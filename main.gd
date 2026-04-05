@@ -21,6 +21,8 @@ func _start_sequence() -> void:
 	grid_manager.set_cell(Vector2i(5, 6), GridManager.CellType.WALL)
 	grid_manager.set_cell(Vector2i(5, 7), GridManager.CellType.WALL)
 	world_render.render_grid()
+	
+	# Spawn ember
 	var ember_scene = preload("res://Scenes/Ember.tscn")
 	var ember = ember_scene.instantiate()
 	add_child(ember)
@@ -29,7 +31,27 @@ func _start_sequence() -> void:
 	ember.global_position = grid_manager.grid_to_world(center, 0.5)
 	ember.setup(game_manager, grid_manager)
 	ember.add_to_group("ember")
+	
+	# Spawn first freeze powerup then keep respawning
+	_spawn_freeze()
+	
 	game_manager.start_bout()
+
+func _spawn_freeze() -> void:
+	var freeze_scene = preload("res://Scenes/Entities/FreezePowerup.tscn")
+	var freeze = freeze_scene.instantiate()
+	add_child(freeze)
+	# Random position on the map
+	var rx = randi_range(3, grid_manager.width - 3)
+	var ry = randi_range(3, grid_manager.height - 3)
+	freeze.global_position = grid_manager.grid_to_world(Vector2i(rx, ry), 0.5)
+	# When collected, wait 15 seconds then respawn
+	freeze.collected.connect(_on_freeze_collected)
+
+func _on_freeze_collected() -> void:
+	print("Freeze collected - respawning in 15 seconds...")
+	await get_tree().create_timer(15.0).timeout
+	_spawn_freeze()
 
 func _on_generation_complete(success: bool) -> void:
 	if success:

@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://c0oyun2734ltc"]
 
-[ext_resource type="PackedScene" uid="uid://ct561el8b1aen" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/buildings/neutral/wall_straight.gltf" id="1_anevn"]
+[ext_resource type="ArrayMesh" uid="uid://ch2ackv4xh72l" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/obj/buildings/neutral/wall_straight.obj" id="1_anevn"]
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_b75j8"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_anevn"]
 
 [node name="WallTile" type="Node3D" unique_id=304738643]
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=487641539]
+[node name="wall" type="MeshInstance3D" parent="." unique_id=1552343260]
+mesh = ExtResource("1_anevn")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=14032869]
-shape = SubResource("CylinderShape3D_b75j8")
+[node name="StaticBody3D" type="StaticBody3D" parent="wall" unique_id=1876939885]
 
-[node name="wall_straight2" parent="." unique_id=383302578 instance=ExtResource("1_anevn")]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="wall/StaticBody3D" unique_id=1031826244]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -0.003466487, 0.4956932, -0.020900965)
+shape = SubResource("BoxShape3D_anevn")

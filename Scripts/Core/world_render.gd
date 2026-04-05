@@ -40,8 +40,8 @@ func _on_cell_assigned(grid_pos: Vector2i, type: int) -> void:
 	match type:
 		GridManager.CellType.FLOOR:
 			if floor_mesh: instance = floor_mesh.instantiate()
-		GridManager.CellType.WALL:
-			if wall_mesh: instance = wall_mesh.instantiate()
+		#GridManager.CellType.WALL:
+			#if wall_mesh: instance = wall_mesh.instantiate()
 		GridManager.CellType.SANCTUM:
 			if sanctum_mesh: instance = sanctum_mesh.instantiate()
 			

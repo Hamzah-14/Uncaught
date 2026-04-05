@@ -24,6 +24,18 @@ sky = SubResource("Sky_272bh")
 tonemap_mode = 2
 glow_enabled = true
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_0ds76"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7dk6h"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l0ud6"]
+size = Vector3(1, 4, 30)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q3i8e"]
+size = Vector3(1, 4, 30)
+
 [node name="Arena" type="Node3D" unique_id=1875301184 node_paths=PackedStringArray("csp_generator", "game_manager", "grid_manager", "world_render")]
 script = ExtResource("1_jhdhk")
 csp_generator = NodePath("Systems/CSPGenerator")
@@ -32,7 +44,7 @@ grid_manager = NodePath("Systems/GridManager")
 world_render = NodePath("WorldRender")
 
 [node name="Player" parent="." unique_id=453831029 instance=ExtResource("2_0ds76")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8027172, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 1, 13)
 
 [node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]
 transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 7, 4.5)
@@ -77,3 +89,33 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("7_q3i8e")
+
+[node name="Ember" parent="." unique_id=1546455077 node_paths=PackedStringArray("game_manager") instance=ExtResource("6_2tw1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1, 13)
+game_manager = NodePath("../Systems/GameManager")
+
+[node name="Border Walls" type="Node3D" parent="." unique_id=1250113944]
+
+[node name="North" type="StaticBody3D" parent="Border Walls" unique_id=2132103825]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/North" unique_id=291448016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -2)
+shape = SubResource("BoxShape3D_0ds76")
+
+[node name="South" type="StaticBody3D" parent="Border Walls" unique_id=1964164156]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/South" unique_id=2076297484]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, 28)
+shape = SubResource("BoxShape3D_7dk6h")
+
+[node name="East" type="StaticBody3D" parent="Border Walls" unique_id=31811800]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/East" unique_id=1050075587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2, 13)
+shape = SubResource("BoxShape3D_l0ud6")
+
+[node name="West" type="StaticBody3D" parent="Border Walls" unique_id=1834727911]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/West" unique_id=577256411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2, 13)
+shape = SubResource("BoxShape3D_q3i8e")

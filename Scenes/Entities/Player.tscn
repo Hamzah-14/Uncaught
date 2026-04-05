@@ -2,16 +2,17 @@
 
 [ext_resource type="Script" uid="uid://bc7f7m1npw2uf" path="res://Scripts/Entities/player.gd" id="1_3kvya"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_0rwas"]
-
 [sub_resource type="SphereMesh" id="SphereMesh_3kvya"]
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_0rwas"]
+
 [node name="Player" type="CharacterBody3D" unique_id=453831029]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 2
 script = ExtResource("1_3kvya")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1646801411]
-shape = SubResource("SphereShape3D_0rwas")
-
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=631879453]
 mesh = SubResource("SphereMesh_3kvya")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1646801411]
+shape = SubResource("SphereShape3D_0rwas")

@@ -22,6 +22,7 @@ func _ready() -> void:
 	_current_stamina = max_stamina
 
 func _physics_process(delta: float) -> void:
+	#print(global_position)
 	# 1. Input Mapping (Requires setting up "move_up", "move_down", etc. in Project Settings -> Input Map)
 	var input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var direction = Vector3(input_dir.x, 0, input_dir.y).normalized()

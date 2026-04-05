@@ -2,8 +2,8 @@ class_name GridManager
 extends Node
 
 @export var cell_size: float = 1.155 # The 'radius' of the hexagon
-@export var width: int = 20
-@export var height: int = 20
+@export var width: int = 17
+@export var height: int = 17
 enum CellType { EMPTY, FLOOR, WALL, SANCTUM, HAZARD_COLLAPSE, HAZARD_VOID, HAZARD_TRAP }
 
 var _grid: Dictionary = {}

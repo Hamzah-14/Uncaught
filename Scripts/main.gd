@@ -19,12 +19,15 @@ func _start_sequence() -> void:
 	for x in range(grid_manager.width):
 		for y in range(grid_manager.height):
 			grid_manager.set_cell(Vector2i(x, y), GridManager.CellType.FLOOR)
-			 # Test walls
-	grid_manager.set_cell(Vector2i(5, 5), GridManager.CellType.WALL)
-	grid_manager.set_cell(Vector2i(5, 6), GridManager.CellType.WALL)
-	grid_manager.set_cell(Vector2i(5, 7), GridManager.CellType.WALL)
+			print(grid_manager.grid_to_world(Vector2i(grid_manager.width, grid_manager.height)))
+			#if x == 0 or x == grid_manager.width - 1 or y == 0 or y == grid_manager.height - 1:
+				#grid_manager.set_cell(Vector2i(x, y), GridManager.CellType.WALL)
+			#else:
+				#grid_manager.set_cell(Vector2i(x, y), GridManager.CellType.FLOOR)
+	#
 	world_render.render_grid()
 	game_manager.start_bout()
+	print("Test floor built.")
 	
 #func _start_sequence() -> void:
 	#print("Sequence Initiated: Rebuilding Coliseum...")

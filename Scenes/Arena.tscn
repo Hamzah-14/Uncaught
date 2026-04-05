@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dypiml14tgn03" path="res://Scripts/main.gd" id="1_jhdhk"]
 [ext_resource type="PackedScene" uid="uid://7drhbq6grd1o" path="res://Scenes/Entities/Player.tscn" id="2_0ds76"]
+[ext_resource type="Script" uid="uid://bcriwvwaxm8hb" path="res://Scripts/Entities/guardian_controller.gd" id="2_7dk6h"]
 [ext_resource type="Script" uid="uid://dxctygh10drh6" path="res://Scripts/Core/grid_manager.gd" id="2_bugre"]
 [ext_resource type="Script" uid="uid://cym7bprf4onwo" path="res://Scripts/Ai/csp_generator.gd" id="3_2tw1v"]
 [ext_resource type="Script" uid="uid://2t7iigs5nk3w" path="res://Scripts/Core/game_manager.gd" id="4_0ds76"]
@@ -10,6 +11,10 @@
 [ext_resource type="Script" uid="uid://cmqtvg2gf8q3" path="res://Scripts/debug_overlay.gd" id="7_q3i8e"]
 [ext_resource type="PackedScene" uid="uid://dlnfumyoj7xlk" path="res://Scenes/objects/FloorTile.tscn" id="8_0ds76"]
 [ext_resource type="PackedScene" uid="uid://ct561el8b1aen" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/buildings/neutral/wall_straight.gltf" id="8_2tw1v"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_7dk6h"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dk6h"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7mycd"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -31,7 +36,20 @@ game_manager = NodePath("Systems/GameManager")
 grid_manager = NodePath("Systems/GridManager")
 world_render = NodePath("WorldRender")
 
-[node name="Player" parent="." unique_id=453831029 instance=ExtResource("2_0ds76")]
+[node name="Guardian" type="CharacterBody3D" parent="." unique_id=1236728196 groups=["guardian"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+collision_layer = 5
+script = ExtResource("2_7dk6h")
+grid_manager_path = NodePath("../Systems/GridManager")
+game_manager_path = NodePath("../Systems/GameManager")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Guardian" unique_id=405091459]
+mesh = SubResource("CapsuleMesh_7dk6h")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Guardian" unique_id=1654962757]
+shape = SubResource("CapsuleShape3D_7dk6h")
+
+[node name="Player" parent="." unique_id=453831029 groups=["player"] instance=ExtResource("2_0ds76")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.8027172, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]

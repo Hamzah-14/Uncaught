@@ -7,7 +7,9 @@
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dk6h"]
 
 [node name="Guardian" type="CharacterBody3D" unique_id=1940341909 groups=["guardian"]]
-collision_layer = 5
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 13.86)
+collision_layer = 4
+collision_mask = 11
 script = ExtResource("1_ya8of")
 grid_manager_path = NodePath("../Systems/GridManager")
 game_manager_path = NodePath("../Systems/GameManager")

@@ -1,59 +1,33 @@
 class_name GuardianStateMachine
 extends Node
 
-enum Mode { CHASE, SEARCH, INTERCEPT, AGGRESSIVE }
+enum Mode { CHASE, FLEE, INTERCEPT, AGGRESSIVE }
 
-var current_mode: Mode = Mode.SEARCH
+@export var chase_range: float = 6.0
+@export var intercept_range: float = 8.0
 
-# Thresholds (you can tweak these numbers to change Guardian behavior)
-@export var chase_range: float = 8.0       # tiles away before Guardian chases
-@export var aggressive_range: float = 12.0  # tiles away in aggressive mode
-@export var search_duration: float = 5.0    # seconds before giving up searching
-
-# Internal tracking
-var _time_in_search: float = 0.0
+var current_mode: Mode = Mode.CHASE
 var _player_last_known: Vector2i = Vector2i.ZERO
 var _player_last_direction: Vector2i = Vector2i.ZERO
 
-# References (set these up in guardian_controller.gd)
+# Sensor inputs
 var player_visible: bool = false
 var player_holds_ember: bool = false
 var guardian_holds_ember: bool = false
 var distance_to_player: float = 999.0
 var player_grid_pos: Vector2i = Vector2i.ZERO
+var time_remaining: float = 999.0
+var score_deficit: float = 0.0
+
+# Set by GuardianController after building PotentialField
+var flee_goal: Vector2i = Vector2i.ZERO
+
+# Set by GuardianController so INTERCEPT can clamp and validate walkability
+var grid_size: Vector2i = Vector2i(19, 19)
+@export var grid_manager: GridManager
 
 func _process(delta: float) -> void:
 	_evaluate_state(delta)
-
-func _evaluate_state(delta: float) -> void:
-	var previous_mode = current_mode
-
-	# --- Rule evaluation (order matters — top rules win) ---
-
-	# Rule 1: Player has the ember → always aggressive
-	if player_holds_ember:
-		current_mode = Mode.AGGRESSIVE
-
-	# Rule 2: Guardian has ember → chase player to protect lead
-	elif guardian_holds_ember and player_visible:
-		current_mode = Mode.CHASE
-
-	# Rule 3: Player visible and close → chase
-	elif player_visible and distance_to_player <= chase_range:
-		current_mode = Mode.CHASE
-
-	# Rule 4: Player visible but far → try to intercept
-	elif player_visible and distance_to_player > chase_range:
-		current_mode = Mode.INTERCEPT
-
-	# Rule 5: Player not visible → search
-	elif not player_visible:
-		current_mode = Mode.SEARCH
-		_time_in_search += delta
-
-	# --- Debug print when mode changes ---
-	if current_mode != previous_mode:
-		print("Guardian mode: ", Mode.keys()[current_mode])
 
 func update_sensors(
 	p_visible: bool,
@@ -61,7 +35,9 @@ func update_sensors(
 	g_holds_ember: bool,
 	dist: float,
 	p_pos: Vector2i,
-	p_dir: Vector2i
+	p_dir: Vector2i,
+	match_time_remaining: float,
+	current_score_deficit: float
 ) -> void:
 	player_visible = p_visible
 	player_holds_ember = p_holds_ember
@@ -69,10 +45,29 @@ func update_sensors(
 	distance_to_player = dist
 	player_grid_pos = p_pos
 	_player_last_direction = p_dir
+	time_remaining = match_time_remaining
+	score_deficit = current_score_deficit
 
 	if p_visible:
 		_player_last_known = p_pos
-		_time_in_search = 0.0
+
+func _evaluate_state(delta: float) -> void:
+	var previous_mode = current_mode
+
+	if guardian_holds_ember:
+		# Guardian has the Ember — run away using PotentialField
+		current_mode = Mode.FLEE
+	elif time_remaining < 45.0 and score_deficit >= 2.0:
+		current_mode = Mode.AGGRESSIVE
+	elif player_visible and distance_to_player <= chase_range:
+		current_mode = Mode.CHASE
+	elif player_visible and distance_to_player <= intercept_range:
+		current_mode = Mode.INTERCEPT
+	else:
+		current_mode = Mode.CHASE
+
+	if current_mode != previous_mode:
+		print("Guardian mode: ", Mode.keys()[current_mode])
 
 func get_goal() -> Vector2i:
 	match current_mode:
@@ -80,9 +75,16 @@ func get_goal() -> Vector2i:
 			return player_grid_pos
 		Mode.AGGRESSIVE:
 			return player_grid_pos
-		Mode.SEARCH:
-			return _player_last_known
+		Mode.FLEE:
+			return flee_goal  # set externally by GuardianController each frame
 		Mode.INTERCEPT:
-			# Predict where player is heading
-			return _player_last_known + (_player_last_direction * 3)
+			var predicted = _player_last_known + (_player_last_direction * 2)
+			# Clamp to grid bounds
+			predicted.x = clamp(predicted.x, 0, grid_size.x - 1)
+			predicted.y = clamp(predicted.y, 0, grid_size.y - 1)
+			# If the predicted tile is inside an obstacle, fall back to the
+			# player's current position so A* can route around walls normally.
+			if grid_manager == null or not grid_manager.is_walkable(predicted):
+				return player_grid_pos
+			return predicted
 	return player_grid_pos

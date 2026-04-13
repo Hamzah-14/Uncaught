@@ -4,7 +4,7 @@ extends Node
 @export var cell_size: float = 1.155 # The 'radius' of the hexagon
 @export var width: int = 17
 @export var height: int = 17
-enum CellType { EMPTY, FLOOR, WALL, SANCTUM, HAZARD_COLLAPSE, HAZARD_VOID, HAZARD_TRAP }
+enum CellType { EMPTY, FLOOR, FLOOR_HIGH, RIVER_SHORE, RIVER_WATER, BRIDGE, SANCTUM, HAZARD_COLLAPSE, HAZARD_VOID, HAZARD_TRAP }
 
 var _grid: Dictionary = {}
 
@@ -26,39 +26,19 @@ func grid_to_world(grid_pos: Vector2i, y_elevation: float = 0.0) -> Vector3:
 
 ## Converts a continuous 3D world position back to a discrete Hex Grid coordinate.
 func world_to_grid(world_pos: Vector3) -> Vector2i:
-	# 1. Convert Cartesian to fractional Axial coordinates (q, r)
-	var q_frac: float = (world_pos.x * (sqrt(3.0)/3.0) - world_pos.z / 3.0) / cell_size
-	var r_frac: float = (world_pos.z * (2.0/3.0)) / cell_size
-	
-	# 2. Round to the nearest hex center (Axial rounding)
-	var s_frac: float = -q_frac - r_frac
-	
-	var q: int = roundi(q_frac)
-	var r: int = roundi(r_frac)
-	var s: int = roundi(s_frac)
-	
-	var q_diff: float = abs(q - q_frac)
-	var r_diff: float = abs(r - r_frac)
-	var s_diff: float = abs(s - s_frac)
-	
-	if q_diff > r_diff and q_diff > s_diff:
-		q = -r - s
-	elif r_diff > s_diff:
-		r = -q - s
-		
-	# 3. Convert Axial (q, r) back to Odd-R offset (col, row)
-	var col: int = q + (r - (r & 1)) / 2
-	var row: int = r
-	
-	# Clamp to map boundaries just in case physics pushes an entity out of bounds
-	col = clampi(col, 0, width - 1)
+	# Invert: world_z = row * cell_size * HEX_HEIGHT_MULT
+	var row: int = roundi(world_pos.z / (cell_size * HEX_HEIGHT_MULT))
 	row = clampi(row, 0, height - 1)
 	
+	# Invert: world_x = (col + offset) * cell_size * HEX_WIDTH_MULT
+	var is_odd_row: bool = (row % 2 != 0)
+	var offset: float = 0.5 if is_odd_row else 0.0
+	var col: int = roundi(world_pos.x / (cell_size * HEX_WIDTH_MULT) - offset)
+	col = clampi(col, 0, width - 1)
+	
 	return Vector2i(col, row)
-# ------------------------------------------------------------------------------
+	
 # Grid State Management
-# ------------------------------------------------------------------------------
-
 func set_cell(grid_pos: Vector2i, type: int) -> void:
 	_grid[grid_pos] = type
 
@@ -67,7 +47,7 @@ func get_cell(grid_pos: Vector2i) -> int:
 
 func is_walkable(grid_pos: Vector2i) -> bool:
 	var type: int = get_cell(grid_pos)
-	return type != CellType.WALL and type != CellType.EMPTY
+	return type != CellType.EMPTY
 
 func clear_grid() -> void:
 	_grid.clear()
@@ -121,3 +101,11 @@ func get_all_neighbors(grid_pos: Vector2i) -> Array[Vector2i]:
 		neighbors.append(grid_pos + dir)
 			
 	return neighbors
+	
+func get_speed_multiplier(grid_pos: Vector2i) -> float:
+	match get_cell(grid_pos):
+		CellType.RIVER_SHORE: return 0.65
+		CellType.RIVER_WATER: return 0.4
+		CellType.FLOOR_HIGH: return 0.75
+		CellType.BRIDGE: return 1.0
+		_: return 1.0

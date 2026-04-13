@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://6256wludvhgk"]
+
+[ext_resource type="Script" uid="uid://dypiml14tgn03" path="res://Scripts/main.gd" id="1_jhdhk"]
+[ext_resource type="PackedScene" uid="uid://7drhbq6grd1o" path="res://Scenes/Entities/Player.tscn" id="2_0ds76"]
+[ext_resource type="PackedScene" uid="uid://dydvmd8us6msl" path="res://Scenes/Entities/guardian.tscn" id="2_7dk6h"]
+[ext_resource type="Script" uid="uid://dxctygh10drh6" path="res://Scripts/Core/grid_manager.gd" id="2_bugre"]
+[ext_resource type="Script" uid="uid://cym7bprf4onwo" path="res://Scripts/Ai/csp_generator.gd" id="3_2tw1v"]
+[ext_resource type="Script" uid="uid://2t7iigs5nk3w" path="res://Scripts/Core/game_manager.gd" id="4_0ds76"]
+[ext_resource type="Script" uid="uid://c2kitkphcyk65" path="res://Scripts/Core/world_render.gd" id="5_7dk6h"]
+[ext_resource type="PackedScene" uid="uid://dmhaaugx8sdb" path="res://Scenes/objects/ember.tscn" id="6_2tw1v"]
+[ext_resource type="Script" uid="uid://cmqtvg2gf8q3" path="res://Scripts/UI/debug_overlay.gd" id="7_q3i8e"]
+[ext_resource type="PackedScene" uid="uid://dlnfumyoj7xlk" path="res://Scenes/objects/FloorTile.tscn" id="8_0ds76"]
+[ext_resource type="PackedScene" uid="uid://db370kr1djuse" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/tiles/roads/hex_road_D.gltf" id="10_hvw3n"]
+[ext_resource type="PackedScene" uid="uid://b2rhatf4jrdtf" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/decoration/nature/hills_A.gltf" id="11_3pegn"]
+[ext_resource type="PackedScene" uid="uid://ua84o2owvnbm" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/tiles/rivers/hex_river_A_curvy.gltf" id="12_3sm8e"]
+[ext_resource type="PackedScene" uid="uid://d4cyb1e3aob58" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/gltf/buildings/neutral/building_bridge_A.gltf" id="13_xon8w"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7mycd"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_272bh"]
+sky_material = SubResource("ProceduralSkyMaterial_7mycd")
+
+[sub_resource type="Environment" id="Environment_5vw27"]
+background_mode = 2
+sky = SubResource("Sky_272bh")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0ds76"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7dk6h"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l0ud6"]
+size = Vector3(1, 4, 30)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q3i8e"]
+size = Vector3(1, 4, 30)
+
+[node name="Arena" type="Node3D" unique_id=1875301184 node_paths=PackedStringArray("csp_generator", "game_manager", "grid_manager", "world_render")]
+script = ExtResource("1_jhdhk")
+csp_generator = NodePath("Systems/CSPGenerator")
+game_manager = NodePath("Systems/GameManager")
+grid_manager = NodePath("Systems/GridManager")
+world_render = NodePath("WorldRender")
+
+[node name="Guardian" parent="." unique_id=1940341909 instance=ExtResource("2_7dk6h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
+
+[node name="Player" parent="." unique_id=453831029 instance=ExtResource("2_0ds76")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 13)
+walk_speed = 5.0
+sprint_speed = 9.0
+acceleration = 10.0
+max_stamina = 100.0
+stamina_drain_rate = 25.0
+stamina_regen_rate = 15.0
+exhaustion_threshold = 20.0
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 7, 4.5)
+size = 20.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1502416517]
+environment = SubResource("Environment_5vw27")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=830173664]
+metadata/_edit_lock_ = true
+
+[node name="Systems" type="Node" parent="." unique_id=1021027887]
+
+[node name="GridManager" type="Node" parent="Systems" unique_id=945586108]
+script = ExtResource("2_bugre")
+cell_size = null
+width = null
+height = null
+
+[node name="CSPGenerator" type="Node" parent="Systems" unique_id=1426352937 node_paths=PackedStringArray("grid_manager")]
+script = ExtResource("3_2tw1v")
+grid_manager = NodePath("../GridManager")
+
+[node name="GameManager" type="Node" parent="Systems" unique_id=1065981383]
+script = ExtResource("4_0ds76")
+
+[node name="WorldRender" type="Node3D" parent="." unique_id=1138659791 node_paths=PackedStringArray("game_manager", "grid_manager", "csp_generator")]
+script = ExtResource("5_7dk6h")
+game_manager = NodePath("../Systems/GameManager")
+grid_manager = NodePath("../Systems/GridManager")
+csp_generator = NodePath("../Systems/CSPGenerator")
+ember_scene = ExtResource("6_2tw1v")
+floor_mesh = ExtResource("8_0ds76")
+sanctum_mesh = ExtResource("10_hvw3n")
+floor_high_mesh = ExtResource("11_3pegn")
+river_mesh = ExtResource("12_3sm8e")
+bridge_mesh = ExtResource("13_xon8w")
+hazard_collapse_mesh = ExtResource("8_0ds76")
+hazard_trap_mesh = ExtResource("8_0ds76")
+
+[node name="DebugLayer" type="CanvasLayer" parent="." unique_id=1527909462]
+
+[node name="DebugOverlay" type="Control" parent="DebugLayer" unique_id=2031543679]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_q3i8e")
+
+[node name="Border Walls" type="Node3D" parent="." unique_id=1250113944]
+
+[node name="North" type="StaticBody3D" parent="Border Walls" unique_id=2132103825]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/North" unique_id=291448016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -2)
+shape = SubResource("BoxShape3D_0ds76")
+
+[node name="South" type="StaticBody3D" parent="Border Walls" unique_id=1964164156]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/South" unique_id=2076297484]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, 28)
+shape = SubResource("BoxShape3D_7dk6h")
+
+[node name="East" type="StaticBody3D" parent="Border Walls" unique_id=31811800]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/East" unique_id=1050075587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2, 13)
+shape = SubResource("BoxShape3D_l0ud6")
+
+[node name="West" type="StaticBody3D" parent="Border Walls" unique_id=1834727911]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/West" unique_id=577256411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2, 13)
+shape = SubResource("BoxShape3D_q3i8e")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=139511703]
+
+[node name="TimerLabel" type="Label" parent="HUD" unique_id=820282925]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="PlayerScore" type="Label" parent="HUD" unique_id=520229915]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Guardian" type="Label" parent="HUD" unique_id=1230294466]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="EmberStatus" type="Label" parent="HUD" unique_id=697187351]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Poweruplabel" type="Label" parent="HUD" unique_id=482267100]
+offset_right = 40.0
+offset_bottom = 23.0

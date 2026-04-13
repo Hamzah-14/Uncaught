@@ -5,6 +5,8 @@ extends Node
 signal time_updated(time_left: float)
 signal score_updated(player_score: float, guardian_score: float)
 signal bout_ended(player_won: bool)
+signal round_ended(round_num: int, player_won_round: bool)
+signal round_changed(round_num: int, guardian_capacity: int)
 signal ember_possession_changed(holder: Holder)
 
 enum Holder { NONE, PLAYER, GUARDIAN }
@@ -18,6 +20,10 @@ var _player_score: float = 0.0
 var _guardian_score: float = 0.0
 var _current_holder: Holder = Holder.NONE
 var _match_active: bool = false
+var _current_round: int = 1
+var _max_rounds: int = 3
+var _player_rounds_won: int = 0
+var _guardian_rounds_won: int = 0
 
 func _ready() -> void:
 	# Disable processing until the match officially starts 
@@ -61,5 +67,36 @@ func set_ember_holder(new_holder: Holder) -> void:
 func _end_bout() -> void:
 	_match_active = false
 	set_process(false)
-	var player_won: bool = _player_score > _guardian_score
-	emit_signal("bout_ended", player_won)
+	var player_won_round: bool = _player_score > _guardian_score
+	print("[GameManager] Round ", _current_round, " ended — player won: ", player_won_round,
+		" (P:", snapped(_player_score, 0.1), " G:", snapped(_guardian_score, 0.1), ")")
+	if player_won_round:
+		_player_rounds_won += 1
+	else:
+		_guardian_rounds_won += 1
+	var finished_round := _current_round
+	_current_round += 1
+	if _current_round > _max_rounds:
+		var player_won: bool = _player_rounds_won > _guardian_rounds_won
+		print("[GameManager] Bout over — player wins bout: ", player_won,
+			" (rounds P:", _player_rounds_won, " G:", _guardian_rounds_won, ")")
+		emit_signal("bout_ended", player_won)
+	else:
+		emit_signal("round_ended", finished_round, player_won_round)
+		reset_round()
+
+func reset_round() -> void:
+	_time_remaining = match_duration
+	_player_score = 0.0
+	_guardian_score = 0.0
+	var new_capacity: int = min(_current_round - 1, 3)
+	print("[GameManager] Round ", _current_round, " starting — guardian capacity: ", new_capacity)
+	emit_signal("round_changed", _current_round, new_capacity)
+	start_next_round()
+
+func start_next_round() -> void:
+	_current_holder = Holder.NONE
+	emit_signal("ember_possession_changed", _current_holder)
+	_match_active = true
+	set_process(true)
+	print("[GameManager] Match resumed — round ", _current_round)

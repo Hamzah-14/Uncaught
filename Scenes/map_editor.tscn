@@ -1,0 +1,123 @@
+[gd_scene format=3 uid="uid://cb7amdqql8dc6"]
+
+[ext_resource type="Script" uid="uid://bu4a8y00yy53t" path="res://Scripts/Tools/map_editor.gd" id="1_7xmfy"]
+[ext_resource type="Script" uid="uid://15t0x2s2jqda" path="res://Scripts/Tools/hex_canvas.gd" id="2_43ajp"]
+
+[node name="MapEditor" type="Control" unique_id=442563106]
+layout_mode = 3
+anchor_right = 1.1680001
+anchor_bottom = 1.3610001
+offset_right = -215.04016
+offset_bottom = -259.92004
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_7xmfy")
+
+[node name="HSplitContainer" type="HSplitContainer" parent="." unique_id=653085930]
+custom_minimum_size = Vector2(0, 800)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+split_offsets = PackedInt32Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="Sidebar" type="Panel" parent="HSplitContainer" unique_id=370553487]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="HSplitContainer/Sidebar" unique_id=490562294]
+layout_mode = 0
+offset_right = 306.0
+offset_bottom = 817.0
+
+[node name="Uncaught Map Editor" type="Label" parent="HSplitContainer/Sidebar/VBox" unique_id=538500397]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="MapName" type="LineEdit" parent="HSplitContainer/Sidebar/VBox" unique_id=784740361]
+layout_mode = 2
+
+[node name="Paint Tool" type="Label" parent="HSplitContainer/Sidebar/VBox" unique_id=1502024209]
+layout_mode = 2
+text = "Paint Tool"
+
+[node name="ToolGrid" type="GridContainer" parent="HSplitContainer/Sidebar/VBox" unique_id=1535733146]
+layout_mode = 2
+columns = 2
+
+[node name="HSeparator" type="HSeparator" parent="HSplitContainer/Sidebar/VBox" unique_id=107621384]
+layout_mode = 2
+
+[node name="Saved Maps" type="Label" parent="HSplitContainer/Sidebar/VBox" unique_id=224346949]
+layout_mode = 2
+text = "Saved Maps
+"
+
+[node name="MapList" type="ItemList" parent="HSplitContainer/Sidebar/VBox" unique_id=49477880]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="SaveMap" type="Button" parent="HSplitContainer/Sidebar/VBox" unique_id=1532513530]
+layout_mode = 2
+text = "Save Map
+"
+
+[node name="LoadMap" type="Button" parent="HSplitContainer/Sidebar/VBox" unique_id=2048362877]
+layout_mode = 2
+text = "Load Selected
+"
+
+[node name="Delete" type="Button" parent="HSplitContainer/Sidebar/VBox" unique_id=438701199]
+layout_mode = 2
+text = "Delete
+"
+
+[node name="Clear" type="Button" parent="HSplitContainer/Sidebar/VBox" unique_id=1346481977]
+layout_mode = 2
+text = "Clear Canvas
+"
+
+[node name="HSeparator2" type="HSeparator" parent="HSplitContainer/Sidebar/VBox" unique_id=312040207]
+layout_mode = 2
+
+[node name="HoverLabel" type="Label" parent="HSplitContainer/Sidebar/VBox" unique_id=73911370]
+layout_mode = 2
+text = "Hover a cell
+"
+
+[node name="StatusLabel" type="Label" parent="HSplitContainer/Sidebar/VBox" unique_id=676215730]
+layout_mode = 2
+text = "Ready
+"
+autowrap_mode = 2
+
+[node name="CanvasPanel" type="Panel" parent="HSplitContainer" unique_id=457273665]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/CanvasPanel" unique_id=290715767]
+custom_minimum_size = Vector2(620, 600)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_right = -63.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HexCanvas" type="Control" parent="HSplitContainer/CanvasPanel/ScrollContainer" unique_id=564865367]
+custom_minimum_size = Vector2(800, 800)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_43ajp")
+
+[connection signal="pressed" from="HSplitContainer/Sidebar/VBox/SaveMap" to="." method="_on_save_map_pressed"]
+[connection signal="pressed" from="HSplitContainer/Sidebar/VBox/LoadMap" to="." method="_on_load_selected_pressed"]
+[connection signal="pressed" from="HSplitContainer/Sidebar/VBox/Delete" to="." method="_on_delete_selected_pressed"]
+[connection signal="pressed" from="HSplitContainer/Sidebar/VBox/Clear" to="." method="_on_clear_canvas_pressed"]

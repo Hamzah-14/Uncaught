@@ -48,8 +48,8 @@ func _draw() -> void:
 			var color = Color(0.1, 0.1, 0.1, 0.8) # Default / Empty Dark Gray
 
 			match type:
-				GridManager.CellType.WALL:
-					color = Color.DARK_SLATE_GRAY
+				#GridManager.CellType.WALL:
+					#color = Color.DARK_SLATE_GRAY
 				GridManager.CellType.FLOOR:
 					color = Color.DARK_GRAY
 				GridManager.CellType.SANCTUM:

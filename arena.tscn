@@ -1,0 +1,487 @@
+[gd_scene format=3 uid="uid://6256wludvhgk"]
+
+[ext_resource type="Script" uid="uid://dypiml14tgn03" path="res://Scripts/main.gd" id="1_k4esh"]
+[ext_resource type="PackedScene" uid="uid://dydvmd8us6msl" path="res://Scenes/Entities/guardian.tscn" id="2_y61l0"]
+[ext_resource type="Texture2D" uid="uid://6b2atheo8wba" path="res://Assets/female/Idle (1).png" id="3_x4twx"]
+[ext_resource type="Texture2D" uid="uid://duhe7ctmpcscc" path="res://Assets/female/Idle (2).png" id="4_7g8yf"]
+[ext_resource type="Texture2D" uid="uid://f1i6v3v45y0d" path="res://Assets/female/Idle (3).png" id="5_828po"]
+[ext_resource type="Texture2D" uid="uid://b7go11rr5w1g7" path="res://Assets/female/Idle (4).png" id="6_m55t2"]
+[ext_resource type="Texture2D" uid="uid://bambtuheybfyb" path="res://Assets/female/Idle (5).png" id="7_ol2co"]
+[ext_resource type="Texture2D" uid="uid://dj0u6fcedlwbc" path="res://Assets/female/Idle (6).png" id="8_qcki5"]
+[ext_resource type="Texture2D" uid="uid://npbue441twjg" path="res://Assets/female/Idle (7).png" id="9_4mwc8"]
+[ext_resource type="Texture2D" uid="uid://ogdbvrltb7ii" path="res://Assets/female/Idle (8).png" id="10_65wmh"]
+[ext_resource type="Texture2D" uid="uid://46brxp4kytcf" path="res://Assets/female/Idle (9).png" id="11_y272u"]
+[ext_resource type="Texture2D" uid="uid://xc4pnesvr6hd" path="res://Assets/female/Idle (10).png" id="12_vidq7"]
+[ext_resource type="Texture2D" uid="uid://6whmq2y6amk3" path="res://Assets/female/Idle (11).png" id="13_5dl2k"]
+[ext_resource type="Texture2D" uid="uid://cgtx10xjt241" path="res://Assets/female/Idle (12).png" id="14_5hltk"]
+[ext_resource type="Texture2D" uid="uid://vmom7ah7ccvt" path="res://Assets/female/Idle (13).png" id="15_ndsdd"]
+[ext_resource type="Texture2D" uid="uid://b5qjerqig7bvc" path="res://Assets/female/Idle (14).png" id="16_08aep"]
+[ext_resource type="Texture2D" uid="uid://cux6cv7mmirct" path="res://Assets/female/Idle (15).png" id="17_6v3xl"]
+[ext_resource type="Texture2D" uid="uid://c0g4e5ghfokj7" path="res://Assets/female/Walk (1).png" id="18_bkuat"]
+[ext_resource type="Texture2D" uid="uid://b65dil74vvood" path="res://Assets/female/Walk (2).png" id="19_p3oab"]
+[ext_resource type="Texture2D" uid="uid://jynq6fht0d12" path="res://Assets/female/Walk (3).png" id="20_xws8d"]
+[ext_resource type="Texture2D" uid="uid://bxrvf626ejva" path="res://Assets/female/Walk (4).png" id="21_eb7c3"]
+[ext_resource type="Texture2D" uid="uid://hajtarqtdffj" path="res://Assets/female/Walk (5).png" id="22_qrl15"]
+[ext_resource type="Texture2D" uid="uid://b0wsd10ngfyie" path="res://Assets/female/Walk (6).png" id="23_umogq"]
+[ext_resource type="Texture2D" uid="uid://cqfo0w80c30d7" path="res://Assets/female/Walk (7).png" id="24_ogomf"]
+[ext_resource type="Texture2D" uid="uid://dgjeh4nyn487m" path="res://Assets/female/Walk (8).png" id="25_cmbej"]
+[ext_resource type="Texture2D" uid="uid://ceakx412118uh" path="res://Assets/female/Walk (9).png" id="26_vddje"]
+[ext_resource type="Texture2D" uid="uid://4ylowcvsf6p" path="res://Assets/female/Walk (10).png" id="27_q7rk3"]
+[ext_resource type="PackedScene" uid="uid://7drhbq6grd1o" path="res://Scenes/Entities/Player.tscn" id="28_7sips"]
+[ext_resource type="Texture2D" uid="uid://drxsukyl3wao2" path="res://Assets/png/Dead (1).png" id="29_kchtw"]
+[ext_resource type="Texture2D" uid="uid://mnci3ic3sxrc" path="res://Assets/png/Slide (1).png" id="30_wowkp"]
+[ext_resource type="Texture2D" uid="uid://3rolbnxby0e5" path="res://Assets/png/Slide (2).png" id="31_ydhrf"]
+[ext_resource type="Texture2D" uid="uid://054kv8gm3bt3" path="res://Assets/png/Slide (3).png" id="32_jbdih"]
+[ext_resource type="Texture2D" uid="uid://b5wpjtcostmho" path="res://Assets/png/Slide (4).png" id="33_peg6k"]
+[ext_resource type="Texture2D" uid="uid://dvf7p7yfltmjn" path="res://Assets/png/Slide (5).png" id="34_c3frq"]
+[ext_resource type="Texture2D" uid="uid://cgxk5na0iq31y" path="res://Assets/png/Hurt (8).png" id="35_gbwg2"]
+[ext_resource type="Texture2D" uid="uid://c22tc6omfcj31" path="res://Assets/png/Idle (1).png" id="36_24kgo"]
+[ext_resource type="Texture2D" uid="uid://6wvkvw82c7f6" path="res://Assets/png/Idle (2).png" id="37_snsup"]
+[ext_resource type="Texture2D" uid="uid://d0y1nbxe1qm0k" path="res://Assets/png/Idle (3).png" id="38_isa0o"]
+[ext_resource type="Texture2D" uid="uid://skqmy87ylkry" path="res://Assets/png/Idle (4).png" id="39_du3qx"]
+[ext_resource type="Texture2D" uid="uid://itel2n11r7u1" path="res://Assets/png/Idle (5).png" id="40_dmglv"]
+[ext_resource type="Texture2D" uid="uid://cmg5ogdp3yyfv" path="res://Assets/png/Idle (6).png" id="41_d7qif"]
+[ext_resource type="Texture2D" uid="uid://bbanv756noeoo" path="res://Assets/png/Idle (7).png" id="42_0vdkr"]
+[ext_resource type="Texture2D" uid="uid://dmaun5wqe2b7t" path="res://Assets/png/Idle (8).png" id="43_j1yui"]
+[ext_resource type="Texture2D" uid="uid://dvbu80ix5i2ca" path="res://Assets/png/Idle (9).png" id="44_8eoml"]
+[ext_resource type="Texture2D" uid="uid://bqveasnss27ry" path="res://Assets/png/Idle (10).png" id="45_i8ofr"]
+[ext_resource type="Texture2D" uid="uid://v4psqkimyx0y" path="res://Assets/png/Run (1).png" id="46_megy3"]
+[ext_resource type="Texture2D" uid="uid://dj5vjy71kp5rm" path="res://Assets/png/Run (2).png" id="47_poe4n"]
+[ext_resource type="Texture2D" uid="uid://7gvs4oshoxf1" path="res://Assets/png/Run (3).png" id="48_emj6m"]
+[ext_resource type="Texture2D" uid="uid://doko2g6qbg307" path="res://Assets/png/Run (4).png" id="49_vewui"]
+[ext_resource type="Texture2D" uid="uid://b2f27q2df85bb" path="res://Assets/png/Run (5).png" id="50_3qanu"]
+[ext_resource type="Texture2D" uid="uid://b35kef2omchbj" path="res://Assets/png/Run (6).png" id="51_7anxk"]
+[ext_resource type="Texture2D" uid="uid://33442rcmvlcy" path="res://Assets/png/Run (7).png" id="52_t2ip2"]
+[ext_resource type="Texture2D" uid="uid://r8qn67ckdxp1" path="res://Assets/png/Run (8).png" id="53_mt35w"]
+[ext_resource type="Script" uid="uid://dxctygh10drh6" path="res://Scripts/Core/grid_manager.gd" id="54_824q6"]
+[ext_resource type="Script" uid="uid://cym7bprf4onwo" path="res://Scripts/Ai/csp_generator.gd" id="55_nr26l"]
+[ext_resource type="Script" uid="uid://2t7iigs5nk3w" path="res://Scripts/Core/game_manager.gd" id="56_8ucul"]
+[ext_resource type="Script" uid="uid://c0pawmkxj5g31" path="res://Scripts/Core/powerup_manager.gd" id="57_a0odl"]
+[ext_resource type="Script" uid="uid://x1me80ebfi72" path="res://Scripts/Powerups/fruit_manager.gd" id="58_1hsly"]
+[ext_resource type="Script" uid="uid://c2kitkphcyk65" path="res://Scripts/Core/world_render.gd" id="59_vtyqf"]
+[ext_resource type="PackedScene" uid="uid://dmhaaugx8sdb" path="res://Scenes/objects/ember.tscn" id="60_yasd6"]
+[ext_resource type="PackedScene" uid="uid://dlnfumyoj7xlk" path="res://Scenes/objects/FloorTile.tscn" id="61_8tk05"]
+[ext_resource type="PackedScene" uid="uid://cwj3048bxfx7b" path="res://Scenes/objects/hills_a_2.tscn" id="62_mpavt"]
+[ext_resource type="PackedScene" uid="uid://cgr8qn8luuuw7" path="res://Scenes/objects/building_bridge_a_2.tscn" id="63_rtstu"]
+[ext_resource type="PackedScene" uid="uid://bxotkmqwmw0oq" path="res://Scenes/dummy_hex.tscn" id="64_5n0xw"]
+[ext_resource type="PackedScene" uid="uid://bien3r5yxa1mn" path="res://Scenes/objects/hex_river_a_2.tscn" id="65_kgymu"]
+[ext_resource type="PackedScene" uid="uid://ddla7mysrm5vu" path="res://Scenes/objects/hex_water_2.tscn" id="66_3c5dq"]
+[ext_resource type="Script" uid="uid://ctlm66nd2qu2u" path="res://Scripts/Core/terrain_generator.gd" id="67_ddkv3"]
+[ext_resource type="Script" uid="uid://cmqtvg2gf8q3" path="res://Scripts/UI/debug_overlay.gd" id="68_vnh16"]
+[ext_resource type="Script" uid="uid://c3ut5bb8ao43x" path="res://Scripts/UI/HotbarUI.gd" id="69_3r4r1"]
+[ext_resource type="Script" uid="uid://87qaa04r10bq" path="res://Scripts/UI/StaminaBar.gd" id="70_tjb4h"]
+[ext_resource type="Script" uid="uid://10agrwfwqgas" path="res://Scenes/hud.gd" id="71_1tcak"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uy68w"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_x4twx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_7g8yf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_828po")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_m55t2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_ol2co")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_qcki5")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_4mwc8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_65wmh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_y272u")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_vidq7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_5dl2k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_5hltk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_ndsdd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_08aep")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_6v3xl")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("18_bkuat")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_p3oab")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_xws8d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_eb7c3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_qrl15")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_umogq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_ogomf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_cmbej")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_vddje")
+}, {
+"duration": 1.0,
+"texture": ExtResource("27_q7rk3")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_3u63p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("29_kchtw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("30_wowkp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("31_ydhrf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("32_jbdih")
+}, {
+"duration": 1.0,
+"texture": ExtResource("33_peg6k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("34_c3frq")
+}],
+"loop": true,
+"name": &"dash",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("35_gbwg2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("36_24kgo")
+}, {
+"duration": 1.0,
+"texture": ExtResource("37_snsup")
+}, {
+"duration": 1.0,
+"texture": ExtResource("38_isa0o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("39_du3qx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("40_dmglv")
+}, {
+"duration": 1.0,
+"texture": ExtResource("41_d7qif")
+}, {
+"duration": 1.0,
+"texture": ExtResource("42_0vdkr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("43_j1yui")
+}, {
+"duration": 1.0,
+"texture": ExtResource("44_8eoml")
+}, {
+"duration": 1.0,
+"texture": ExtResource("45_i8ofr")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("46_megy3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("47_poe4n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("48_emj6m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("49_vewui")
+}, {
+"duration": 1.0,
+"texture": ExtResource("50_3qanu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("51_7anxk")
+}, {
+"duration": 1.0,
+"texture": ExtResource("52_t2ip2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("53_mt35w")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 8.0
+}]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7mycd"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_272bh"]
+sky_material = SubResource("ProceduralSkyMaterial_7mycd")
+
+[sub_resource type="Environment" id="Environment_5vw27"]
+background_mode = 2
+sky = SubResource("Sky_272bh")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0ds76"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_7dk6h"]
+size = Vector3(35, 4, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_l0ud6"]
+size = Vector3(1, 4, 30)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_q3i8e"]
+size = Vector3(1, 4, 30)
+
+[node name="Arena" type="Node3D" unique_id=1875301184 node_paths=PackedStringArray("csp_generator", "game_manager", "grid_manager", "world_render", "powerup_manager", "fruit_manager", "guardian_controller", "hotbar_ui", "stamina_bar")]
+script = ExtResource("1_k4esh")
+csp_generator = NodePath("Systems/CSPGenerator")
+game_manager = NodePath("Systems/GameManager")
+grid_manager = NodePath("Systems/GridManager")
+world_render = NodePath("WorldRender")
+powerup_manager = NodePath("PowerupManager")
+fruit_manager = NodePath("FruitManager")
+guardian_controller = NodePath("Guardian")
+hotbar_ui = NodePath("HotbarUI")
+stamina_bar = NodePath("StaminaBar")
+
+[node name="Guardian" parent="." unique_id=1940341909 node_paths=PackedStringArray("fruit_manager") instance=ExtResource("2_y61l0")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
+floor_max_angle = 1.0471976
+fruit_manager = NodePath("../FruitManager")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="Guardian" unique_id=605322689]
+transform = Transform3D(0.5999629, -0.0041429065, 0.005235722, 0.0041885967, 0.59996253, -0.0052359216, -0.0051992424, 0.005272148, 0.5999543, 0.024, 0.75, 0.057)
+sprite_frames = SubResource("SpriteFrames_uy68w")
+animation = &"walk"
+
+[node name="Player" parent="." unique_id=453831029 instance=ExtResource("28_7sips")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 13)
+floor_max_angle = 1.0471976
+grid_manager_path = NodePath("../Systems/GridManager")
+
+[node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]
+transform = Transform3D(1, 0, 0, 0, 0.7071068, 0.7071068, 0, -0.7071068, 0.7071068, 0, 13, 14)
+fov = 50.0
+size = 20.0
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="Player" unique_id=2040733324]
+transform = Transform3D(0.5999567, -0.004379512, 0.0057308064, 0.004425878, 0.59996414, -0.004848419, -0.005695074, 0.0048903422, 0.59995306, 0.0243721, -0.0026150942, 0.05705166)
+billboard = 1
+sprite_frames = SubResource("SpriteFrames_3u63p")
+animation = &"dash"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1502416517]
+environment = SubResource("Environment_5vw27")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=830173664]
+metadata/_edit_lock_ = true
+
+[node name="Systems" type="Node" parent="." unique_id=1021027887]
+
+[node name="GridManager" type="Node" parent="Systems" unique_id=945586108 groups=["gridmanager"]]
+script = ExtResource("54_824q6")
+
+[node name="CSPGenerator" type="Node" parent="Systems" unique_id=1426352937 node_paths=PackedStringArray("grid_manager")]
+script = ExtResource("55_nr26l")
+grid_manager = NodePath("../GridManager")
+
+[node name="GameManager" type="Node" parent="Systems" unique_id=1065981383 groups=["game_manager"]]
+script = ExtResource("56_8ucul")
+
+[node name="PowerupManager" type="Node" parent="." unique_id=1063087571]
+script = ExtResource("57_a0odl")
+
+[node name="FruitManager" type="Node" parent="." unique_id=1344836284 node_paths=PackedStringArray("grid_manager")]
+script = ExtResource("58_1hsly")
+grid_manager = NodePath("../Systems/GridManager")
+
+[node name="WorldRender" type="Node3D" parent="." unique_id=1138659791 node_paths=PackedStringArray("game_manager", "grid_manager", "csp_generator")]
+script = ExtResource("59_vtyqf")
+game_manager = NodePath("../Systems/GameManager")
+grid_manager = NodePath("../Systems/GridManager")
+csp_generator = NodePath("../Systems/CSPGenerator")
+ember_scene = ExtResource("60_yasd6")
+floor_mesh = ExtResource("61_8tk05")
+sanctum_mesh = ExtResource("61_8tk05")
+floor_high_mesh = ExtResource("62_mpavt")
+bridge_mesh = ExtResource("63_rtstu")
+hazard_collapse_mesh = ExtResource("61_8tk05")
+hazard_trap_mesh = ExtResource("64_5n0xw")
+river_shore_mesh = ExtResource("65_kgymu")
+river_water_mesh = ExtResource("66_3c5dq")
+
+[node name="TerrainGenerator" type="Node" parent="." unique_id=191925705 node_paths=PackedStringArray("grid_manager")]
+script = ExtResource("67_ddkv3")
+grid_manager = NodePath("../Systems/GridManager")
+
+[node name="DebugLayer" type="CanvasLayer" parent="." unique_id=1527909462]
+
+[node name="DebugOverlay" type="Control" parent="DebugLayer" unique_id=2031543679]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("68_vnh16")
+
+[node name="Border Walls" type="Node3D" parent="." unique_id=1250113944]
+
+[node name="North" type="StaticBody3D" parent="Border Walls" unique_id=2132103825]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/North" unique_id=291448016]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, -2)
+shape = SubResource("BoxShape3D_0ds76")
+
+[node name="South" type="StaticBody3D" parent="Border Walls" unique_id=1964164156]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/South" unique_id=2076297484]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 2, 28)
+shape = SubResource("BoxShape3D_7dk6h")
+
+[node name="East" type="StaticBody3D" parent="Border Walls" unique_id=31811800]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/East" unique_id=1050075587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 2, 13)
+shape = SubResource("BoxShape3D_l0ud6")
+
+[node name="West" type="StaticBody3D" parent="Border Walls" unique_id=1834727911]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Border Walls/West" unique_id=577256411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 2, 13)
+shape = SubResource("BoxShape3D_q3i8e")
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=139511703]
+
+[node name="TimerLabel" type="Label" parent="HUD" unique_id=820282925]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="PlayerScore" type="Label" parent="HUD" unique_id=520229915]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Guardian" type="Label" parent="HUD" unique_id=1230294466]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="EmberStatus" type="Label" parent="HUD" unique_id=697187351]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Poweruplabel" type="Label" parent="HUD" unique_id=482267100]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="HotbarUI" type="CanvasLayer" parent="." unique_id=163284319]
+script = ExtResource("69_3r4r1")
+
+[node name="StaminaBar" type="CanvasLayer" parent="." unique_id=1109624818]
+script = ExtResource("70_tjb4h")
+
+[node name="HUD2" type="CanvasLayer" parent="." unique_id=153042345]
+script = ExtResource("71_1tcak")
+
+[node name="ProgressBar" type="ProgressBar" parent="HUD2" unique_id=909429854]
+custom_minimum_size = Vector2(200, 3)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -2.0
+offset_right = 2.0
+offset_bottom = 27.0
+grow_horizontal = 2
+max_value = 120.0
+show_percentage = false
+
+[node name="RoundLabel1" type="Label" parent="HUD2" unique_id=1346108369]
+custom_minimum_size = Vector2(1300, 5)
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 20
+text = "							Round 1"
+
+[node name="RoundTransition" type="ColorRect" parent="HUD2" unique_id=978199825]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.007843138, 0.007843138, 0.007843138, 0.7058824)
+
+[node name="Label" type="Label" parent="HUD2/RoundTransition" unique_id=1639158119]
+layout_mode = 0
+offset_left = 359.0
+offset_top = 295.0
+offset_right = 909.0
+offset_bottom = 369.0
+theme_override_font_sizes/font_size = 48
+text = "Next Round - Get Ready"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Endscreen" type="ColorRect" parent="HUD2" unique_id=1022433495]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0035191667, 0.0035191681, 0.0035191672, 1)
+
+[node name="Label" type="Label" parent="HUD2/Endscreen" unique_id=1509297729]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 72
+horizontal_alignment = 1
+vertical_alignment = 1

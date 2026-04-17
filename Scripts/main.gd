@@ -43,6 +43,8 @@ func _start_sequence() -> void:
 		hud.setup(game_manager)
 	if guardian_controller and fruit_manager:
 		guardian_controller.fruit_manager = fruit_manager
+	if guardian_controller and powerup_manager:
+		guardian_controller.powerup_manager = powerup_manager
 	game_manager.start_bout()
 	var player := get_tree().get_first_node_in_group("player") as PlayerController
 	if player:

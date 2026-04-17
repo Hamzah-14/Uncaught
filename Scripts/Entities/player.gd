@@ -22,6 +22,7 @@ var _regen_timer: float = 0.0
 const _DRAIN_TICK: float = 0.5
 const _REGEN_TICK: float = 0.75
 var _on_hazard: bool = false
+var _on_hazard_trap: bool = false
 var _hazard_recover_timer: float = 0.0
 const _HAZARD_RECOVER_TIME: float = 0.8
 var _is_being_pulled: bool = false
@@ -102,10 +103,15 @@ func _physics_process(delta: float) -> void:
 				_on_hazard = true
 				_hazard_recover_timer = 0.0
 				apply_slow(0.35, 999)
+			if not _on_hazard_trap:
+				_on_hazard_trap = true
+				_drain_stamina_instant(40.0)
+				print("Hazard trap triggered")
 		else:
 			if _on_hazard:
 				_on_hazard = false
 				_hazard_recover_timer = _HAZARD_RECOVER_TIME
+			_on_hazard_trap = false
 
 	# Lerp slow multiplier back after leaving hazard
 	if _hazard_recover_timer > 0.0:
@@ -122,6 +128,10 @@ func _physics_process(delta: float) -> void:
 	velocity.y = move_toward(velocity.y, -9.8, 9.8 * delta)
 	move_and_slide()
 	_try_tag_guardian()
+
+func _drain_stamina_instant(amount: float) -> void:
+	_current_stamina = maxf(_current_stamina - amount, 0.0)
+	emit_signal("stamina_changed", _current_stamina, max_stamina)
 
 func restore_stamina(amount: float) -> void:
 	_current_stamina = minf(_current_stamina + amount, max_stamina)

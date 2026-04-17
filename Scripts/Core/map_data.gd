@@ -11,6 +11,8 @@ const TYPE_MAP = {
 	5: GridManager.CellType.SANCTUM,
 	6: GridManager.CellType.HAZARD_COLLAPSE,
 	7: GridManager.CellType.HAZARD_TRAP,
+	8: GridManager.CellType.BLOCKED,
+	9: GridManager.CellType.EMPTY,
 }
 
 static func load_all() -> Array[Dictionary]:

@@ -24,7 +24,9 @@ const COLORS = {
 	5: Color(0.55, 0.25, 0.65),       # SANCTUM - purple
 	6: Color(0.75, 0.22, 0.15),       # HAZARD_COLLAPSE - red
 	7: Color(0.80, 0.45, 0.10),       # HAZARD_TRAP - orange
-	-1: Color(0.10, 0.10, 0.10),      # EMPTY - near black
+	8: Color(0.25, 0.25, 0.28),       # BLOCKED - dark charcoal
+	9: Color(0.08, 0.08, 0.08),       # EMPTY - near black
+	-1: Color(0.10, 0.10, 0.10),      # EMPTY fallback
 }
 
 const TYPE_NAMES = {
@@ -36,6 +38,8 @@ const TYPE_NAMES = {
 	5: "SANCTUM",
 	6: "HAZARD_COLLAPSE",
 	7: "HAZARD_TRAP",
+	8: "BLOCKED",
+	9: "EMPTY",
 	-1: "EMPTY"
 }
 
@@ -68,16 +72,13 @@ func _hex_polygon(cx: float, cy: float) -> PackedVector2Array:
 	return pts
 
 func _world_to_grid(px: float, py: float) -> Vector2i:
-	var best = Vector2i(-1, -1)
-	var best_d = INF
-	for row in range(GRID_H):
-		for col in range(GRID_W):
-			var c = _hex_center(col, row)
-			var d = (px - c.x) ** 2 + (py - c.y) ** 2
-			if d < best_d:
-				best_d = d
-				best = Vector2i(col, row)
-	return best
+	# Direct inverse of _hex_center — O(1) instead of O(GRID_W * GRID_H)
+	var row: int = roundi((py - 10.0 - DISPLAY_SIZE) / (DISPLAY_SIZE * HEX_HEIGHT_MULT))
+	row = clampi(row, 0, GRID_H - 1)
+	var is_odd: bool = row % 2 == 1
+	var col: int = roundi((px - 10.0) / (DISPLAY_SIZE * HEX_WIDTH_MULT) - (0.5 if is_odd else 0.0))
+	col = clampi(col, 0, GRID_W - 1)
+	return Vector2i(col, row)
 
 func _draw() -> void:
 	var center = Vector2i(GRID_W / 2, GRID_H / 2)

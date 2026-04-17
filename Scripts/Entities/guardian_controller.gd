@@ -11,6 +11,7 @@ extends CharacterBody3D
 @export var neutral_wait_time: float = 3.0
 @export var guardian_pickup_delay: float = 0.5  # guardian can grab almost immediately
 @export var fruit_manager: FruitManager
+@export var powerup_manager: PowerupManager
 var _speed_multiplier: float = 1.0
 var _on_hazard: bool = false
 var _hazard_recover_timer: float = 0.0
@@ -30,9 +31,20 @@ var _danger_field: Dictionary = {}
 var _current_path: Array[Vector2i] = []
 var _path_update_timer: float = 0.0
 var _field_update_timer: float = 0.0
-var _field_update_interval: float = 0.4  # Rebuild field every 0.4s
+var _flee_stuck_timer: float = 0.0
+var _last_flee_pos: Vector2i = Vector2i.ZERO
+var _field_update_interval: float = 0.4
 var _last_player_grid_pos: Vector2i = Vector2i.ZERO
 var _player_direction: Vector2i = Vector2i.ZERO
+# Phase Dash cooldown and distance-delta tracking
+var _phase_dash_cooldown: float = 0.0
+var _prev_sampled_distance: float = 0.0
+var _distance_sample_timer: float = 0.0
+var _player_closing_fast: bool = false
+# Proactive powerup seeking
+var _powerup_seek_timer: float = 0.0
+const _POWERUP_SEEK_INTERVAL: float = 2.0
+var _seeking_powerup_pos: Vector2i = Vector2i(-1, -1)
 
 func _ready() -> void:
 	# Get references FIRST before anything uses them
@@ -72,6 +84,16 @@ func _physics_process(delta: float) -> void:
 		_powerup_eval_timer = _POWERUP_EVAL_INTERVAL
 		evaluate_powerup_use()
 
+	# Phase Dash cooldown tick
+	if _phase_dash_cooldown > 0.0:
+		_phase_dash_cooldown -= delta
+
+	# Powerup seeking tick
+	_powerup_seek_timer += delta
+	if _powerup_seek_timer >= _POWERUP_SEEK_INTERVAL:
+		_powerup_seek_timer = 0.0
+		_evaluate_powerup_seeking()
+
 	var my_grid_pos: Vector2i = _grid_manager.world_to_grid(global_position)
 	var player_grid_pos: Vector2i = _grid_manager.world_to_grid(_player.global_position)
 
@@ -80,6 +102,14 @@ func _physics_process(delta: float) -> void:
 	_last_player_grid_pos = player_grid_pos
 
 	var distance_to_player := _hex_distance(my_grid_pos, player_grid_pos)
+
+	# Sample distance every 0.5s to detect if player is closing in fast
+	_distance_sample_timer += delta
+	if _distance_sample_timer >= 0.5:
+		_player_closing_fast = (_prev_sampled_distance - distance_to_player) > 1.0
+		_prev_sampled_distance = distance_to_player
+		_distance_sample_timer = 0.0
+
 	var player_holds_ember := _game_manager._current_holder == GameManager.Holder.PLAYER
 	var guardian_holds_ember := _game_manager._current_holder == GameManager.Holder.GUARDIAN
 	var player_visible: bool = true
@@ -133,8 +163,30 @@ func _physics_process(delta: float) -> void:
 		#print("My pos: ", my_grid_pos)
 		#print("Path size: ", _current_path.size())
 		#print("Danger field size: ", _danger_field.size())
+		# Proactive seeking override — redirect toward a valued powerup if one was chosen
+		if _seeking_powerup_pos != Vector2i(-1, -1):
+			if powerup_manager and powerup_manager.has_powerup_at(_seeking_powerup_pos):
+				goal = _seeking_powerup_pos
+			else:
+				_seeking_powerup_pos = Vector2i(-1, -1)
 		_current_path = _astar.find_path(my_grid_pos, goal)
 	_follow_path(delta, my_grid_pos)
+
+	# Stuck detection — only active while fleeing
+	if _state_machine.current_mode == GuardianStateMachine.Mode.FLEE:
+		if my_grid_pos == _last_flee_pos:
+			_flee_stuck_timer += delta
+		else:
+			_flee_stuck_timer = 0.0
+			_last_flee_pos = my_grid_pos
+		if _flee_stuck_timer >= 1.5:
+			_flee_stuck_timer = 0.0
+			_path_update_timer = 0.0  # force immediate path recalc next frame
+			_danger_field.clear()     # force danger field rebuild next frame
+			print("Guardian stuck while fleeing — forcing path and field reset")
+	else:
+		_flee_stuck_timer = 0.0
+		_last_flee_pos = my_grid_pos
 
 	# Hazard tile tracking
 	var cell := _grid_manager.get_cell(my_grid_pos)
@@ -161,9 +213,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y = -1.0  # keeps player grounded on uneven terrain
 	else:
 		velocity.y -= 9.8 * delta
-	
-	# Smooth step-up over height differences
-	#velocity.y = move_toward(velocity.y, -9.8, 9.8 * delta)
 	move_and_slide()
 	_handle_tag()
 
@@ -271,14 +320,27 @@ func evaluate_powerup_use() -> void:
 					or _state_machine.current_mode == GuardianStateMachine.Mode.AGGRESSIVE
 	var is_fleeing := _state_machine.current_mode == GuardianStateMachine.Mode.FLEE
 
-	# Rule 1: PHASE_DASH — close the gap while chasing (3–6 tiles) or escape when
-	# fleeing and player is right behind (< 3 tiles).
-	if _hotbar.has_type("phase_dash") and \
-			((is_chasing and distance_to_player >= 3.0 and distance_to_player <= 6.0) or \
-			 (is_fleeing and distance_to_player < 3.0)):
-		if _hotbar.use_slot("phase_dash"):
-			apply_phase_dash()
-			print("Guardian used: Phase Dash")
+	# Rule 0: PULL near hazard — highest priority. If player is adjacent to a hazard trap,
+	# pull them onto it immediately.
+	if _hotbar.has_type("pull") and player_holds_ember and distance_to_player <= 4.0 \
+			and _get_adjacent_hazard_trap(player_grid_pos):
+		if _hotbar.use_slot("pull"):
+			_player.apply_pull(global_position)
+			print("Guardian pulling player toward hazard trap")
+		return
+
+	# Rule 1: PHASE_DASH — strategic use only, with cooldown.
+	# Chase: medium range (4-7 tiles) with a long path, close the gap efficiently.
+	# Flee: player closing in fast AND already dangerously close (< 4 tiles).
+	if _hotbar.has_type("phase_dash") and _phase_dash_cooldown <= 0.0:
+		var dash_chase := is_chasing and distance_to_player >= 4.0 and \
+				distance_to_player <= 7.0 and _current_path.size() > 6
+		var dash_flee := is_fleeing and _player_closing_fast and distance_to_player < 4.0
+		if dash_chase or dash_flee:
+			if _hotbar.use_slot("phase_dash"):
+				apply_phase_dash()
+				_phase_dash_cooldown = 3.0
+				print("Guardian used: Phase Dash (", "chase" if dash_chase else "flee", ")")
 	# Rule 2: FREEZE — player has ember and has put distance between themselves and us.
 	elif _hotbar.has_type("freeze") and player_holds_ember and distance_to_player > 4.0:
 		if _hotbar.use_slot("freeze"):
@@ -305,3 +367,58 @@ func evaluate_powerup_use() -> void:
 		if _hotbar.use_slot("pull"):
 			_player.apply_pull(global_position)
 			print("Guardian used: Pull — player yanked toward guardian")
+
+func _get_adjacent_hazard_trap(target_pos: Vector2i) -> bool:
+	for neighbor in _grid_manager.get_walkable_neighbors(target_pos):
+		if _grid_manager.get_cell(neighbor) == GridManager.CellType.HAZARD_TRAP:
+			return true
+	return false
+
+func _evaluate_powerup_seeking() -> void:
+	if powerup_manager == null or _hotbar == null:
+		return
+	# Don't seek if hotbar is full
+	if _hotbar_capacity == 0:
+		return
+
+	var my_grid_pos := _grid_manager.world_to_grid(global_position)
+	var guardian_holds_ember := _game_manager._current_holder == GameManager.Holder.GUARDIAN
+
+	# Base scores per type — guardian-valid only (SHIELD excluded)
+	var base_scores: Dictionary = {
+		PowerupManager.PowerupType.FREEZE:     10.0,
+		PowerupManager.PowerupType.PULL:       10.0,
+		PowerupManager.PowerupType.SPEED_BOOST: 8.0,
+		PowerupManager.PowerupType.PHASE_DASH:  7.0,
+		PowerupManager.PowerupType.SLOW_FIELD:  6.0,
+		PowerupManager.PowerupType.FRUIT_WIPE:  4.0,
+	}
+
+	var best_score: float = -1.0
+	var best_pos: Vector2i = Vector2i(-1, -1)
+
+	for pup in powerup_manager.get_active_powerups():
+		var type: int = pup["type"]
+		# Skip player-only types
+		if not base_scores.has(type):
+			continue
+		# When holding ember: only consider SPEED_BOOST
+		if guardian_holds_ember and type != PowerupManager.PowerupType.SPEED_BOOST:
+			continue
+		# Skip types already in hotbar
+		var type_str: String = pup["type_str"]
+		if _hotbar.has_type(type_str):
+			continue
+
+		var dist: float = _hex_distance(my_grid_pos, pup["grid_pos"])
+		var score: float = base_scores[type] - 1.5 * dist
+
+		if score > best_score:
+			best_score = score
+			best_pos = pup["grid_pos"]
+
+	var threshold: float = 6.0 if guardian_holds_ember else 5.0
+	if best_score > threshold:
+		_seeking_powerup_pos = best_pos
+	else:
+		_seeking_powerup_pos = Vector2i(-1, -1)

@@ -104,6 +104,37 @@ func _apply_collectible(type: PowerupType, collector: Node) -> void:
 				collector.collect_powerup("pull")
 			print("PULL collected by guardian — stored in hotbar")
 
+# Maps PowerupType enum to the string key used in hotbars
+const _TYPE_STRINGS: Dictionary = {
+	PowerupType.FREEZE:      "freeze",
+	PowerupType.SLOW_FIELD:  "slow_field",
+	PowerupType.SPEED_BOOST: "speed_boost",
+	PowerupType.SHIELD:      "shield",
+	PowerupType.PHASE_DASH:  "phase_dash",
+	PowerupType.FRUIT_WIPE:  "fruit_wipe",
+	PowerupType.PULL:        "pull",
+}
+
+# Returns active powerups as [{type, type_str, grid_pos}] for AI scoring.
+func get_active_powerups() -> Array:
+	var result: Array = []
+	for pup in _powerups:
+		if is_instance_valid(pup["node"]):
+			result.append({
+				"type":     pup["type"],
+				"type_str": _TYPE_STRINGS.get(pup["type"], ""),
+				"grid_pos": grid_manager.world_to_grid(pup["node"].global_position),
+			})
+	return result
+
+# Returns true if any active powerup occupies the given grid position.
+func has_powerup_at(grid_pos: Vector2i) -> bool:
+	for pup in _powerups:
+		if is_instance_valid(pup["node"]):
+			if grid_manager.world_to_grid(pup["node"].global_position) == grid_pos:
+				return true
+	return false
+
 func _nearest_in_range(pos: Vector3, radius: float) -> Node:
 	if _player and _player.global_position.distance_to(pos) <= radius:
 		return _player

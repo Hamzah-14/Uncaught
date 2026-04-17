@@ -4,7 +4,7 @@ extends Node
 @export var cell_size: float = 1.155 # The 'radius' of the hexagon
 @export var width: int = 17
 @export var height: int = 17
-enum CellType { EMPTY, FLOOR, FLOOR_HIGH, RIVER_SHORE, RIVER_WATER, BRIDGE, SANCTUM, HAZARD_COLLAPSE, HAZARD_VOID, HAZARD_TRAP }
+enum CellType { EMPTY, BLOCKED, FLOOR, FLOOR_HIGH, RIVER_SHORE, RIVER_WATER, BRIDGE, SANCTUM, HAZARD_COLLAPSE, HAZARD_VOID, HAZARD_TRAP }
 
 var _grid: Dictionary = {}
 
@@ -47,7 +47,7 @@ func get_cell(grid_pos: Vector2i) -> int:
 
 func is_walkable(grid_pos: Vector2i) -> bool:
 	var type: int = get_cell(grid_pos)
-	return type != CellType.EMPTY
+	return type != CellType.EMPTY and type != CellType.BLOCKED
 
 func clear_grid() -> void:
 	_grid.clear()

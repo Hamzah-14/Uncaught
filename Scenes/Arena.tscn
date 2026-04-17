@@ -13,9 +13,9 @@
 [ext_resource type="Script" uid="uid://x1me80ebfi72" path="res://Scripts/Powerups/fruit_manager.gd" id="8_h7bwd"]
 [ext_resource type="PackedScene" uid="uid://dlnfumyoj7xlk" path="res://Scenes/objects/FloorTile.tscn" id="9_3pegn"]
 [ext_resource type="PackedScene" uid="uid://bxotkmqwmw0oq" path="res://Scenes/dummy_hex.tscn" id="9_7dk6h"]
-[ext_resource type="PackedScene" uid="uid://cwj3048bxfx7b" path="res://Scenes/objects/hills_a_2.tscn" id="10_3sm8e"]
 [ext_resource type="Script" uid="uid://ctlm66nd2qu2u" path="res://Scripts/Core/terrain_generator.gd" id="10_7dk6h"]
 [ext_resource type="PackedScene" uid="uid://cgr8qn8luuuw7" path="res://Scenes/objects/building_bridge_a_2.tscn" id="11_3sm8e"]
+[ext_resource type="PackedScene" uid="uid://cbie01jh2a8dd" path="res://Scenes/objects/Mountain-trees.tscn" id="12_3u63p"]
 [ext_resource type="PackedScene" uid="uid://bien3r5yxa1mn" path="res://Scenes/objects/hex_river_a_2.tscn" id="12_xon8w"]
 [ext_resource type="PackedScene" uid="uid://ddla7mysrm5vu" path="res://Scenes/objects/hex_water_2.tscn" id="13_rw01f"]
 [ext_resource type="Script" uid="uid://c3ut5bb8ao43x" path="res://Scripts/UI/HotbarUI.gd" id="18_rw01f"]
@@ -59,13 +59,15 @@ hotbar_ui = NodePath("HotbarUI")
 stamina_bar = NodePath("StaminaBar")
 
 [node name="Guardian" parent="." unique_id=1940341909 node_paths=PackedStringArray("fruit_manager") instance=ExtResource("2_7dk6h")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5)
-floor_max_angle = 1.0471976
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1, 5.755259)
+floor_max_angle = 1.7453293
+floor_snap_length = 0.3
 fruit_manager = NodePath("../FruitManager")
 
 [node name="Player" parent="." unique_id=453831029 instance=ExtResource("2_0ds76")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1, 13)
 floor_max_angle = 1.0471976
+floor_snap_length = 0.3
 grid_manager_path = NodePath("../Systems/GridManager")
 
 [node name="Camera3D" type="Camera3D" parent="Player" unique_id=415257827]
@@ -106,7 +108,7 @@ csp_generator = NodePath("../Systems/CSPGenerator")
 ember_scene = ExtResource("6_2tw1v")
 floor_mesh = ExtResource("9_3pegn")
 sanctum_mesh = ExtResource("9_3pegn")
-floor_high_mesh = ExtResource("10_3sm8e")
+floor_high_mesh = ExtResource("12_3u63p")
 bridge_mesh = ExtResource("11_3sm8e")
 hazard_collapse_mesh = ExtResource("9_3pegn")
 hazard_trap_mesh = ExtResource("9_7dk6h")

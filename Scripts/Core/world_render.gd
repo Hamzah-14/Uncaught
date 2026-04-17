@@ -41,6 +41,8 @@ func _on_cell_assigned(grid_pos: Vector2i, type: int) -> void:
 	var y_offset: float = 0.0
 
 	match type:
+		GridManager.CellType.BLOCKED:
+			if floor_high_mesh: instance = floor_high_mesh.instantiate()
 		GridManager.CellType.FLOOR:
 			if floor_mesh: instance = floor_mesh.instantiate()
 		GridManager.CellType.FLOOR_HIGH:
@@ -52,7 +54,7 @@ func _on_cell_assigned(grid_pos: Vector2i, type: int) -> void:
 			y_offset = -0.1
 		GridManager.CellType.BRIDGE:
 			if bridge_mesh: instance = bridge_mesh.instantiate()
-			y_offset = 0.15
+			y_offset = 0.0
 		GridManager.CellType.SANCTUM:
 			if sanctum_mesh: instance = sanctum_mesh.instantiate()
 		GridManager.CellType.HAZARD_COLLAPSE:

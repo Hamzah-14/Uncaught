@@ -18,6 +18,8 @@ const TYPE_NAMES = {
 	5: "SANCTUM",
 	6: "HAZARD_COLLAPSE",
 	7: "HAZARD_TRAP",
+	8: "BLOCKED",
+	9: "EMPTY",
 }
 const TOOL_COLORS = {
 	0: Color(0.22, 0.45, 0.15),
@@ -28,6 +30,8 @@ const TOOL_COLORS = {
 	5: Color(0.55, 0.25, 0.65),
 	6: Color(0.75, 0.22, 0.15),
 	7: Color(0.80, 0.45, 0.10),
+	8: Color(0.25, 0.25, 0.28),
+	9: Color(0.08, 0.08, 0.08),
 }
 
 var _tool_buttons: Array[Button] = []

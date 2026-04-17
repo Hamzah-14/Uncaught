@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dydvmd8us6msl"]
+
+[ext_resource type="Script" uid="uid://c5jt8njrisfg7" path="res://Scripts/Entities/guardian_controller.gd" id="1_ya8of"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_7dk6h"]
+
+[node name="Guardian" type="CharacterBody3D" unique_id=1940341909 groups=["guardian"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.5, 13.86)
+collision_layer = 4
+collision_mask = 11
+script = ExtResource("1_ya8of")
+grid_manager_path = NodePath("../Systems/GridManager")
+game_manager_path = NodePath("../Systems/GameManager")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=905419437]
+shape = SubResource("CapsuleShape3D_7dk6h")

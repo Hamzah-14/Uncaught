@@ -10,12 +10,9 @@ func setup(grid_manager: GridManager) -> void:
 # Higher cost = Guardian naturally avoids it while fleeing.
 func _tile_cost(pos: Vector2i) -> float:
 	match _grid_manager.get_cell(pos):
-		GridManager.CellType.RIVER_WATER:    return 2.5
-		GridManager.CellType.RIVER_SHORE:    return 1.5
-		GridManager.CellType.HAZARD_TRAP:    return 4.0
-		GridManager.CellType.HAZARD_COLLAPSE: return 3.0
-		GridManager.CellType.HAZARD_VOID:    return 3.0
-		_:                                   return 1.0
+		GridManager.CellType.RIVER_WATER: return 2.5
+		GridManager.CellType.RIVER_SHORE: return 1.5
+		_:                                return 1.0
 
 # Builds a danger map using Dijkstra flood-fill from the player outward.
 # Tiles closer to the player = lower danger score.
@@ -55,28 +52,29 @@ func build_field(player_grid_pos: Vector2i) -> Dictionary:
 # fall back to the second-best tile instead.
 func get_flee_goal(guardian_pos: Vector2i, field: Dictionary) -> Vector2i:
 	var neighbors := _grid_manager.get_walkable_neighbors(guardian_pos)
-
 	if neighbors.is_empty():
 		return guardian_pos
 
 	var best_tile: Vector2i = guardian_pos
-	var best_score: float = -1.0
-	var second_tile: Vector2i = guardian_pos
-	var second_score: float = -1.0
+	var best_score: float = -INF
 
-	for neighbor in neighbors:
-		var score: float = field.get(neighbor, 0.0)
+	for tile in neighbors:
+		var danger: float = field.get(tile, 0.0)
+		var exits := _grid_manager.get_walkable_neighbors(tile).size()
+		var mobility := exits * 2.0
+
+		var edge_penalty := 0.0
+		if tile.x <= 1 or tile.x >= _grid_manager.width - 2 \
+				or tile.y <= 1 or tile.y >= _grid_manager.height - 2:
+			edge_penalty = 4.0
+
+		var dead_end_penalty := 0.0
+		if exits <= 2:
+			dead_end_penalty = 6.0
+
+		var score := danger + mobility - edge_penalty - dead_end_penalty
 		if score > best_score:
-			second_tile = best_tile
-			second_score = best_score
-			best_tile = neighbor
 			best_score = score
-		elif score > second_score:
-			second_tile = neighbor
-			second_score = score
-
-	# If best tile is a dead end (≤ 1 exit), prefer second best
-	if _grid_manager.get_walkable_neighbors(best_tile).size() <= 1 and second_score >= 0.0:
-		return second_tile
+			best_tile = tile
 
 	return best_tile

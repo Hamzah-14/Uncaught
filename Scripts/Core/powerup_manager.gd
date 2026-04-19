@@ -6,7 +6,7 @@ enum PowerupType { FREEZE, SLOW_FIELD, SPEED_BOOST, SHIELD, PHASE_DASH, FRUIT_WI
 @export var grid_manager: GridManager
 @export var max_active: int = 3
 @export var respawn_delay: float = 15.0
-@export var pickup_distance: float = 1.5
+@export var pickup_distance: float = 1.8
 
 var _powerups: Array[Dictionary] = []
 var _active_count: int = 0
@@ -97,6 +97,7 @@ func _apply_collectible(type: PowerupType, collector: Node) -> void:
 			if collector.has_method("collect_powerup"):
 				collector.collect_powerup("fruit_wipe")
 			print("FRUIT WIPE collected by guardian — stored in hotbar")
+			print("FRUIT WIPE: removing all fruits now, blocking respawn 3s")
 
 		PowerupType.PULL:
 			# Guardian-only.

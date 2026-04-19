@@ -7,7 +7,7 @@ data = PackedVector3Array(-1, -0.099999994, -0.4619, 1, -0.049999997, -0.4619, 1
 
 [node name="hex_river_A2" unique_id=111655711 instance=ExtResource("1_ephh6")]
 
-[node name="StaticBody3D" type="StaticBody3D" parent="hex_river_A" parent_id_path=PackedInt32Array(1561028690) index="0" unique_id=141105510]
+[node name="StaticBody3D" type="StaticBody3D" parent="hex_river_A" parent_id_path=PackedInt32Array(510195096) index="0" unique_id=141105510]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="hex_river_A/StaticBody3D" index="0" unique_id=1773202964]
 shape = SubResource("ConcavePolygonShape3D_840ic")

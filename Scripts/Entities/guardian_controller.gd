@@ -1,9 +1,11 @@
 class_name GuardianController
 extends CharacterBody3D
 
-@export var walk_speed: float = 4.0
-@export var sprint_speed: float = 7.0
-@export var acceleration: float = 10.0
+@export var walk_speed: float = 4.2
+@export var sprint_speed: float = 7.35
+var _base_walk_speed: float = 4.2
+var _base_sprint_speed: float = 7.35
+@export var acceleration: float = 11.5
 @export var path_update_interval: float = 0.3
 @export var tag_distance: float = 1.8
 @export var grid_manager_path: NodePath
@@ -13,9 +15,6 @@ extends CharacterBody3D
 @export var fruit_manager: FruitManager
 @export var powerup_manager: PowerupManager
 var _speed_multiplier: float = 1.0
-var _on_hazard: bool = false
-var _hazard_recover_timer: float = 0.0
-const _HAZARD_RECOVER_TIME: float = 0.8
 var _hotbar_capacity: int = 0
 var _hotbar: GuardianHotbar
 var _powerup_eval_timer: float = 0.0
@@ -43,13 +42,36 @@ var _distance_sample_timer: float = 0.0
 var _player_closing_fast: bool = false
 # Proactive powerup seeking
 var _powerup_seek_timer: float = 0.0
-const _POWERUP_SEEK_INTERVAL: float = 2.0
+const _POWERUP_SEEK_INTERVAL: float = 1.0
 var _seeking_powerup_pos: Vector2i = Vector2i(-1, -1)
+var _spawn_position: Vector3
+var _sprite: AnimatedSprite3D
+var _player_camp_timer: float = 0.0
+var _player_camp_pos: Vector2i = Vector2i(-1, -1)
+var _is_flanking: bool = false
+const _CAMP_THRESHOLD: float = 2.5
+var _use_item_anim_timer: float = 0.0
+var _spawn_anim_timer: float = 0.0  # spawn anims disabled — causes invisible bug
+var _spawn_anim: String = "Rig_Medium_General/Spawn_Ground"
+var _tree_boost_mult: float = 1.0
+var _on_collapse_tile: bool = false
+var _collapse_burst_active: bool = false
+var _collapse_burst_timer: float = 0.0
+var _collapse_burst_mult: float = 1.2
+var _collapse_cooldown_timer: float = 0.0
+var _seeking_collapse_tile: Vector2i = Vector2i(-1, -1)
+var _current_round: int = 1
+@onready var _anim_player: AnimationPlayer = get_node_or_null("AnimationPlayer")
+@onready var _barbarian: Node3D = get_node_or_null("Barbarian")
 
 func _ready() -> void:
+	_base_walk_speed = walk_speed
+	_base_sprint_speed = sprint_speed
 	# Get references FIRST before anything uses them
 	_grid_manager = get_node(grid_manager_path)
 	_game_manager = get_node(game_manager_path)
+	_spawn_position = global_position
+	_sprite = get_node_or_null("AnimatedSprite3D")
 	
 	_player = get_tree().get_first_node_in_group("player") as PlayerController
 
@@ -88,6 +110,14 @@ func _physics_process(delta: float) -> void:
 	if _phase_dash_cooldown > 0.0:
 		_phase_dash_cooldown -= delta
 
+	# Collapse burst + cooldown ticks
+	if _collapse_cooldown_timer > 0.0:
+		_collapse_cooldown_timer -= delta
+	if _collapse_burst_active:
+		_collapse_burst_timer -= delta
+		if _collapse_burst_timer <= 0.0:
+			_collapse_burst_active = false
+
 	# Powerup seeking tick
 	_powerup_seek_timer += delta
 	if _powerup_seek_timer >= _POWERUP_SEEK_INTERVAL:
@@ -103,6 +133,18 @@ func _physics_process(delta: float) -> void:
 
 	var distance_to_player := _hex_distance(my_grid_pos, player_grid_pos)
 
+	# Collapse tile step-on — trigger burst when Guardian walks onto one
+	if _grid_manager.get_cell(my_grid_pos) == GridManager.CellType.HAZARD_COLLAPSE:
+		if not _on_collapse_tile and not _collapse_burst_active and _collapse_cooldown_timer <= 0.0:
+			_on_collapse_tile = true
+			_collapse_burst_active = true
+			_collapse_burst_timer = 2.0
+			_collapse_cooldown_timer = 12.0
+			_seeking_collapse_tile = Vector2i(-1, -1)
+			print("Guardian stepped on collapse tile — burst %.2fx for 2s" % _collapse_burst_mult)
+	else:
+		_on_collapse_tile = false
+
 	# Sample distance every 0.5s to detect if player is closing in fast
 	_distance_sample_timer += delta
 	if _distance_sample_timer >= 0.5:
@@ -113,6 +155,25 @@ func _physics_process(delta: float) -> void:
 	var player_holds_ember := _game_manager._current_holder == GameManager.Holder.PLAYER
 	var guardian_holds_ember := _game_manager._current_holder == GameManager.Holder.GUARDIAN
 	var player_visible: bool = true
+
+	# Player camping detection — triggers flanking when player holds ember and camps near BLOCKED
+	if player_holds_ember:
+		var was_flanking := _is_flanking
+		if _is_player_near_blocked(player_grid_pos):
+			if _player_camp_pos == player_grid_pos:
+				_player_camp_timer += delta
+			else:
+				_player_camp_pos = player_grid_pos
+				_player_camp_timer = 0.0
+			_is_flanking = _player_camp_timer >= _CAMP_THRESHOLD
+			if _is_flanking and not was_flanking:
+				print("GUARDIAN FLANKING: player camping near obstacle, routing around")
+		else:
+			_player_camp_timer = 0.0
+			_is_flanking = false
+	else:
+		_player_camp_timer = 0.0
+		_is_flanking = false
 	var score_deficit := _game_manager._player_score - _game_manager._guardian_score
 	
 	_state_machine.update_sensors(
@@ -135,7 +196,7 @@ func _physics_process(delta: float) -> void:
 	# Update path periodically
 	_path_update_timer -= delta
 	if _path_update_timer <= 0.0:
-		_path_update_timer = path_update_interval
+		_path_update_timer = _get_dynamic_path_interval(distance_to_player)
 
 		var goal: Vector2i = player_grid_pos  # safe fallback
 		match _game_manager._current_holder:
@@ -145,8 +206,11 @@ func _physics_process(delta: float) -> void:
 					goal = _grid_manager.world_to_grid(_ember.global_position)
 
 			GameManager.Holder.PLAYER:
-				# Player has Ember → chase player
-				goal = _state_machine.get_goal()
+				# Player has Ember → chase or flank if camping near obstacle
+				if _is_flanking:
+					goal = _get_flank_goal(my_grid_pos, player_grid_pos)
+				else:
+					goal = _state_machine.get_goal()
 
 			GameManager.Holder.GUARDIAN:
 				# Use potential field to flee from player
@@ -169,7 +233,16 @@ func _physics_process(delta: float) -> void:
 				goal = _seeking_powerup_pos
 			else:
 				_seeking_powerup_pos = Vector2i(-1, -1)
+		# Collapse tile override — lower priority, single-cycle only
+		elif _seeking_collapse_tile != Vector2i(-1, -1):
+			if not _collapse_burst_active and _collapse_cooldown_timer <= 0.0 \
+					and _grid_manager.get_cell(_seeking_collapse_tile) == GridManager.CellType.HAZARD_COLLAPSE:
+				goal = _seeking_collapse_tile
+			_seeking_collapse_tile = Vector2i(-1, -1)
+		else:
+			_evaluate_collapse_seeking(my_grid_pos, goal, distance_to_player)
 		_current_path = _astar.find_path(my_grid_pos, goal)
+	_tree_boost_mult = 1.25 if _is_adjacent_to_blocked_g(my_grid_pos) else 1.0
 	_follow_path(delta, my_grid_pos)
 
 	# Stuck detection — only active while fleeing
@@ -181,32 +254,11 @@ func _physics_process(delta: float) -> void:
 			_last_flee_pos = my_grid_pos
 		if _flee_stuck_timer >= 1.5:
 			_flee_stuck_timer = 0.0
-			_path_update_timer = 0.0  # force immediate path recalc next frame
-			_danger_field.clear()     # force danger field rebuild next frame
-			print("Guardian stuck while fleeing — forcing path and field reset")
+			_path_update_timer = 0.0
+			_danger_field.clear()
 	else:
 		_flee_stuck_timer = 0.0
 		_last_flee_pos = my_grid_pos
-
-	# Hazard tile tracking
-	var cell := _grid_manager.get_cell(my_grid_pos)
-	if cell == GridManager.CellType.HAZARD_TRAP:
-		if not _on_hazard:
-			_on_hazard = true
-			_hazard_recover_timer = 0.0
-			apply_slow(0.35, 999)
-	else:
-		if _on_hazard:
-			_on_hazard = false
-			_hazard_recover_timer = _HAZARD_RECOVER_TIME
-
-	# Lerp slow multiplier back after leaving hazard
-	if _hazard_recover_timer > 0.0:
-		_hazard_recover_timer -= delta
-		var t := 1.0 - (_hazard_recover_timer / _HAZARD_RECOVER_TIME)
-		_slow_multiplier = lerpf(0.65, 1.0, t)
-		if _hazard_recover_timer <= 0.0:
-			_slow_multiplier = 1.0
 
 	# Gravity
 	if is_on_floor():
@@ -214,7 +266,30 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= 9.8 * delta
 	move_and_slide()
+
+	# Drive 2D sprite if present
+	if _sprite:
+		var is_moving := Vector2(velocity.x, velocity.z).length() > 0.1
+		_sprite.play("walk" if is_moving else "Idle")
+		if velocity.x < -0.1:
+			_sprite.flip_h = true
+		elif velocity.x > 0.1:
+			_sprite.flip_h = false
+
+	if _use_item_anim_timer > 0.0:
+		_use_item_anim_timer -= delta
+	#if _spawn_anim_timer > 0.0:
+		#_spawn_anim_timer -= delta
+	_update_animation()
 	_handle_tag()
+
+func _get_dynamic_path_interval(distance_to_player: float) -> float:
+	if _game_manager._current_holder == GameManager.Holder.PLAYER:
+		if distance_to_player <= 3.0:
+			return 0.16
+		elif distance_to_player <= 6.0:
+			return 0.22
+	return path_update_interval
 
 # Follow computed A* path
 func _follow_path(delta: float, my_grid_pos: Vector2i) -> void:
@@ -235,7 +310,9 @@ func _follow_path(delta: float, my_grid_pos: Vector2i) -> void:
 	var direction := to_target.normalized()
 	var speed := sprint_speed if _state_machine.current_mode == GuardianStateMachine.Mode.AGGRESSIVE else walk_speed
 	var terrain_mult = _grid_manager.get_speed_multiplier(my_grid_pos)
-	speed *= _slow_multiplier * _speed_multiplier * terrain_mult
+	speed *= _slow_multiplier * _speed_multiplier * _tree_boost_mult * terrain_mult
+	if _collapse_burst_active:
+		speed *= _collapse_burst_mult
 	velocity.x = move_toward(velocity.x, direction.x * speed, acceleration * delta)
 	velocity.z = move_toward(velocity.z, direction.z * speed, acceleration * delta)
 	
@@ -265,6 +342,35 @@ func _handle_tag() -> void:
 		_ember.transfer(self, GameManager.Holder.GUARDIAN)
 var _slow_multiplier: float = 1.0
 
+func _update_animation() -> void:
+	if _anim_player == null:
+		return
+	var moving := Vector2(velocity.x, velocity.z).length() > 0.1
+	var target_anim: String
+	#if _spawn_anim_timer > 0.0:
+		#target_anim = _spawn_anim
+	if _use_item_anim_timer > 0.0:
+		target_anim = "Rig_Medium_General/Use_Item"
+	elif moving:
+		var is_fast := _state_machine.current_mode == GuardianStateMachine.Mode.AGGRESSIVE \
+				or _state_machine.current_mode == GuardianStateMachine.Mode.FLEE
+		target_anim = "Running_B" if is_fast else "Walking_B"
+	else:
+		target_anim = "Rig_Medium_General/Idle_B"
+	if _anim_player.current_animation != target_anim:
+		#if _anim_player.current_animation in ["Rig_Medium_General/Spawn_Air", "Rig_Medium_General/Spawn_Ground"]:
+			#_anim_player.stop(true)
+		_anim_player.play(target_anim)
+	if _barbarian != null and (velocity.x != 0.0 or velocity.z != 0.0):
+		var target_angle := atan2(velocity.x, velocity.z)
+		_barbarian.rotation.y = lerp_angle(_barbarian.rotation.y, target_angle, 0.15)
+
+func reset_to_spawn() -> void:
+	global_position = _spawn_position
+	velocity = Vector3.ZERO
+	#_spawn_anim_timer = 1.5
+	#_spawn_anim = "Rig_Medium_General/Spawn_Air"
+
 func apply_slow(amount: float, duration: float) -> void:
 	_slow_multiplier = 1.0 - amount
 	await get_tree().create_timer(duration).timeout
@@ -279,13 +385,30 @@ func apply_phase_dash() -> void:
 	var dir := Vector3(velocity.x, 0.0, velocity.z).normalized()
 	if dir == Vector3.ZERO:
 		return
-	global_position += dir * _grid_manager.cell_size * 2.0
+	var dist := _grid_manager.cell_size * 2.0 * 1.732 if _grid_manager else 4.0
+	var new_pos := global_position + dir * dist
+	if _grid_manager:
+		var grid_pos := _grid_manager.world_to_grid(new_pos)
+		grid_pos.x = clampi(grid_pos.x, 1, _grid_manager.width - 2)
+		grid_pos.y = clampi(grid_pos.y, 1, _grid_manager.height - 2)
+		new_pos = _grid_manager.grid_to_world(grid_pos, global_position.y)
+	global_position = new_pos
 
 func freeze(duration: float) -> void:
 	set_physics_process(false)
 	velocity = Vector3.ZERO
 	await get_tree().create_timer(duration).timeout
 	set_physics_process(true)
+
+func configure_for_round(round_num: int, capacity: int) -> void:
+	_current_round = round_num
+	_hotbar_capacity = capacity
+	_hotbar.set_capacity(capacity)
+	var speed_mult := pow(1.1, round_num - 1)
+	walk_speed = _base_walk_speed * speed_mult
+	sprint_speed = _base_sprint_speed * speed_mult
+	_collapse_burst_mult = 1.2 + (round_num - 1) * 0.15
+	print("[Guardian] Round %d — speed x%.2f, hotbar capacity %d, collapse burst %.2fx" % [round_num, speed_mult, capacity, _collapse_burst_mult])
 
 func set_hotbar_capacity(n: int) -> void:
 	_hotbar_capacity = n
@@ -326,6 +449,7 @@ func evaluate_powerup_use() -> void:
 			and _get_adjacent_hazard_trap(player_grid_pos):
 		if _hotbar.use_slot("pull"):
 			_player.apply_pull(global_position)
+			_use_item_anim_timer = 0.8
 			print("Guardian pulling player toward hazard trap")
 		return
 
@@ -333,39 +457,45 @@ func evaluate_powerup_use() -> void:
 	# Chase: medium range (4-7 tiles) with a long path, close the gap efficiently.
 	# Flee: player closing in fast AND already dangerously close (< 4 tiles).
 	if _hotbar.has_type("phase_dash") and _phase_dash_cooldown <= 0.0:
-		var dash_chase := is_chasing and distance_to_player >= 4.0 and \
-				distance_to_player <= 7.0 and _current_path.size() > 6
-		var dash_flee := is_fleeing and _player_closing_fast and distance_to_player < 4.0
+		var dash_chase := is_chasing and distance_to_player >= 3.0 and \
+				distance_to_player <= 8.0 and _current_path.size() > 4
+		var dash_flee := is_fleeing and (_player_closing_fast or distance_to_player < 3.0)
 		if dash_chase or dash_flee:
 			if _hotbar.use_slot("phase_dash"):
 				apply_phase_dash()
 				_phase_dash_cooldown = 3.0
+				_use_item_anim_timer = 0.8
 				print("Guardian used: Phase Dash (", "chase" if dash_chase else "flee", ")")
 	# Rule 2: FREEZE — player has ember and has put distance between themselves and us.
 	elif _hotbar.has_type("freeze") and player_holds_ember and distance_to_player > 4.0:
 		if _hotbar.use_slot("freeze"):
 			_player.freeze(2.5)
+			_use_item_anim_timer = 0.8
 			print("Guardian used: Freeze — Player frozen for 2.5s")
 	# Rule 3: SLOW_FIELD — player has ember and is actively running away.
 	elif _hotbar.has_type("slow_field") and player_holds_ember and player_moving_away:
 		if _hotbar.use_slot("slow_field"):
 			_player.apply_slow(0.3, 3.0)
+			_use_item_anim_timer = 0.8
 			print("Guardian used: Slow Trap — Player slowed 30% for 3s")
 	# Rule 4: SPEED_BOOST — guardian has ember and player is dangerously close.
 	elif _hotbar.has_type("speed_boost") and guardian_holds_ember and distance_to_player < 5.0:
 		if _hotbar.use_slot("speed_boost"):
 			apply_speed_boost(1.5, 4.0)
+			_use_item_anim_timer = 0.8
 			print("Guardian used: Speed Boost — 1.5x speed for 4s")
 	# Rule 5: FRUIT_WIPE — player has ember and has fruits to rely on (≥ 2 active).
 	elif _hotbar.has_type("fruit_wipe") and player_holds_ember and \
 			fruit_manager != null and fruit_manager._active_count >= 2:
 		if _hotbar.use_slot("fruit_wipe"):
 			fruit_manager.wipe_fruits()
+			_use_item_anim_timer = 0.8
 			print("Guardian used: Fruit Wipe — all fruits cleared")
 	# Rule 6: PULL — player has ember and has opened a gap.
 	elif _hotbar.has_type("pull") and player_holds_ember and distance_to_player > 5.0:
 		if _hotbar.use_slot("pull"):
 			_player.apply_pull(global_position)
+			_use_item_anim_timer = 0.8
 			print("Guardian used: Pull — player yanked toward guardian")
 
 func _get_adjacent_hazard_trap(target_pos: Vector2i) -> bool:
@@ -374,10 +504,93 @@ func _get_adjacent_hazard_trap(target_pos: Vector2i) -> bool:
 			return true
 	return false
 
+func _is_adjacent_to_blocked_g(pos: Vector2i) -> bool:
+	var is_odd := (pos.y & 1) == 1
+	var offsets: Array[Vector2i]
+	if is_odd:
+		offsets = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+	else:
+		offsets = [Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
+	for off in offsets:
+		if _grid_manager.get_cell(pos + off) == GridManager.CellType.FLOOR_HIGH:
+			return true
+	return false
+
+func _is_player_near_blocked(player_pos: Vector2i) -> bool:
+	var is_odd := (player_pos.y & 1) == 1
+	var offsets: Array[Vector2i]
+	if is_odd:
+		offsets = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+	else:
+		offsets = [Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
+	for off in offsets:
+		if _grid_manager.get_cell(player_pos + off) == GridManager.CellType.FLOOR_HIGH:
+			return true
+	return false
+
+func _get_flank_goal(my_pos: Vector2i, player_pos: Vector2i) -> Vector2i:
+	var walkable := _grid_manager.get_walkable_neighbors(player_pos)
+	if walkable.is_empty():
+		return player_pos
+	var best: Vector2i = walkable[0]
+	var best_dist: float = _hex_distance(my_pos, best)
+	for n in walkable:
+		var d := _hex_distance(my_pos, n)
+		if d > best_dist:
+			best_dist = d
+			best = n
+	return best
+
+func _evaluate_collapse_seeking(my_grid_pos: Vector2i, main_goal: Vector2i, distance_to_player: float) -> void:
+	if _collapse_burst_active or _collapse_cooldown_timer > 0.0:
+		return
+	if distance_to_player <= 3.0:
+		return
+	# Don't seek while fleeing urgently with ember
+	if _game_manager._current_holder == GameManager.Holder.GUARDIAN \
+			and _state_machine.current_mode == GuardianStateMachine.Mode.FLEE:
+		return
+
+	var to_goal := Vector2(float(main_goal.x - my_grid_pos.x), float(main_goal.y - my_grid_pos.y))
+	var goal_len := to_goal.length()
+	var goal_dir := to_goal / goal_len if goal_len > 0.01 else Vector2.ZERO
+	var direct_dist := _hex_distance(my_grid_pos, main_goal)
+
+	var best_score: float = -1.0
+	var best_tile: Vector2i = Vector2i(-1, -1)
+
+	for dx in range(-3, 4):
+		for dy in range(-3, 4):
+			var candidate := my_grid_pos + Vector2i(dx, dy)
+			if candidate.x < 0 or candidate.x >= _grid_manager.width \
+					or candidate.y < 0 or candidate.y >= _grid_manager.height:
+				continue
+			if _grid_manager.get_cell(candidate) != GridManager.CellType.HAZARD_COLLAPSE:
+				continue
+			var dist_to_tile := _hex_distance(my_grid_pos, candidate)
+			if dist_to_tile < 0.5 or dist_to_tile > 3.0:
+				continue
+			# Reject tiles behind the guardian relative to the current goal
+			var to_tile := Vector2(float(candidate.x - my_grid_pos.x), float(candidate.y - my_grid_pos.y))
+			if goal_dir.length() > 0.01 and to_tile.dot(goal_dir) < 0.0:
+				continue
+			# Reject if detour adds more than 2 extra steps
+			var detour_dist := dist_to_tile + _hex_distance(candidate, main_goal)
+			var overhead := detour_dist - direct_dist
+			if overhead > 2.0:
+				continue
+			var score := 5.5 - dist_to_tile - overhead * 0.6
+			if score > best_score:
+				best_score = score
+				best_tile = candidate
+
+	if best_score > 2.5:
+		_seeking_collapse_tile = best_tile
+		print("Guardian detour to collapse tile — burst incoming")
+
 func _evaluate_powerup_seeking() -> void:
 	if powerup_manager == null or _hotbar == null:
 		return
-	# Don't seek if hotbar is full
 	if _hotbar_capacity == 0:
 		return
 
@@ -386,39 +599,54 @@ func _evaluate_powerup_seeking() -> void:
 
 	# Base scores per type — guardian-valid only (SHIELD excluded)
 	var base_scores: Dictionary = {
-		PowerupManager.PowerupType.FREEZE:     10.0,
-		PowerupManager.PowerupType.PULL:       10.0,
-		PowerupManager.PowerupType.SPEED_BOOST: 8.0,
-		PowerupManager.PowerupType.PHASE_DASH:  7.0,
-		PowerupManager.PowerupType.SLOW_FIELD:  6.0,
-		PowerupManager.PowerupType.FRUIT_WIPE:  4.0,
+		PowerupManager.PowerupType.FREEZE:      10.0,
+		PowerupManager.PowerupType.PULL:        10.0,
+		PowerupManager.PowerupType.SPEED_BOOST:  8.0,
+		PowerupManager.PowerupType.PHASE_DASH:   7.0,
+		PowerupManager.PowerupType.SLOW_FIELD:   6.0,
+		PowerupManager.PowerupType.FRUIT_WIPE:   4.0,
 	}
 
+	var player_holds_ember := _game_manager._current_holder == GameManager.Holder.PLAYER
+
+	# Opportunistic grab — any valid powerup within 2 tiles is always worth taking
+	for pup in powerup_manager.get_active_powerups():
+		var type: int = pup["type"]
+		if not base_scores.has(type):
+			continue
+		if guardian_holds_ember and type != PowerupManager.PowerupType.SPEED_BOOST:
+			continue
+		if _hotbar.has_type(pup["type_str"]):
+			continue
+		if _hex_distance(my_grid_pos, pup["grid_pos"]) <= 2.0:
+			_seeking_powerup_pos = pup["grid_pos"]
+			return
+
+	# Scored seek — short detour while chasing, longer when ember is free
+	var max_dist: float = 3.0 if player_holds_ember else 5.0
 	var best_score: float = -1.0
 	var best_pos: Vector2i = Vector2i(-1, -1)
 
 	for pup in powerup_manager.get_active_powerups():
 		var type: int = pup["type"]
-		# Skip player-only types
 		if not base_scores.has(type):
 			continue
-		# When holding ember: only consider SPEED_BOOST
 		if guardian_holds_ember and type != PowerupManager.PowerupType.SPEED_BOOST:
 			continue
-		# Skip types already in hotbar
 		var type_str: String = pup["type_str"]
 		if _hotbar.has_type(type_str):
 			continue
 
 		var dist: float = _hex_distance(my_grid_pos, pup["grid_pos"])
-		var score: float = base_scores[type] - 1.5 * dist
+		if dist > max_dist:
+			continue
+		var score: float = base_scores[type] - 1.2 * dist
 
 		if score > best_score:
 			best_score = score
 			best_pos = pup["grid_pos"]
 
-	var threshold: float = 6.0 if guardian_holds_ember else 5.0
-	if best_score > threshold:
+	if best_score > 4.0:
 		_seeking_powerup_pos = best_pos
 	else:
 		_seeking_powerup_pos = Vector2i(-1, -1)

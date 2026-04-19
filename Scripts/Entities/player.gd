@@ -4,6 +4,7 @@ extends CharacterBody3D
 signal stamina_changed(current_stamina: float, max_stamina: float)
 
 @export var grid_manager_path: NodePath
+@export var game_manager: GameManager
 @export_category("Movement")
 @export var walk_speed: float = 5.0
 @export var acceleration: float = 10.0
@@ -28,12 +29,29 @@ const _HAZARD_RECOVER_TIME: float = 0.8
 var _is_being_pulled: bool = false
 var _pull_velocity: Vector3 = Vector3.ZERO
 var hotbar: Hotbar
+var _is_dashing: bool = false
+var _dash_anim_timer: float = 0.0
+var _tree_slow_mult: float = 1.0
+var _tree_adjacent_timer: float = 0.0
+var _tree_slow_ramp_timer: float = 0.0
+var _tree_cycle_timer: float = 0.0
+var _tree_cycle_duration: float = 17.5
+var _tree_slow_active: bool = false
+var _tree_slow_print_timer: float = 0.0
+var _spawn_position: Vector3
+# Null-safe — only present when scene adds AnimatedSprite3D as child override
+var _sprite: AnimatedSprite3D
+@onready var _anim_player: AnimationPlayer = get_node_or_null("AnimationPlayer")
+@onready var _ranger: Node3D = get_node_or_null("Ranger")
 
 func _ready() -> void:
+	_spawn_position = global_position
 	_grid_manager = get_node(grid_manager_path)
 	_current_stamina = 50.0
 	hotbar = Hotbar.new()
 	add_child(hotbar)
+	_sprite = get_node_or_null("AnimatedSprite3D")
+	_tree_cycle_duration = randf_range(15.0, 20.0)
 
 func _physics_process(delta: float) -> void:
 	# Pull override — ignore all input, force velocity toward guardian
@@ -46,6 +64,9 @@ func _physics_process(delta: float) -> void:
 			velocity.y -= 9.8 * delta
 		move_and_slide()
 		return
+
+	if _dash_anim_timer > 0.0:
+		_dash_anim_timer -= delta
 
 	# 1. Input
 	var input_dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -63,7 +84,7 @@ func _physics_process(delta: float) -> void:
 		_drain_timer -= delta
 		if _drain_timer <= 0.0:
 			_drain_timer = _DRAIN_TICK
-			_current_stamina = maxf(_current_stamina - 12.5, 0.0)
+			_current_stamina = maxf(_current_stamina - 15.0, 0.0)
 			emit_signal("stamina_changed", _current_stamina, max_stamina)
 			if _current_stamina <= 0.0:
 				_is_exhausted = true
@@ -76,7 +97,7 @@ func _physics_process(delta: float) -> void:
 			if _is_exhausted and _current_stamina >= exhaustion_threshold:
 				_is_exhausted = false
 
-	var current_speed := walk_speed * 1.3 if is_sprinting else walk_speed
+	var current_speed := walk_speed * 1.26 if is_sprinting else walk_speed
 
 	# 4. Apply multipliers
 	var terrain_mult: float = 1.0
@@ -84,7 +105,7 @@ func _physics_process(delta: float) -> void:
 		terrain_mult = _grid_manager.get_speed_multiplier(
 			_grid_manager.world_to_grid(global_position)
 		)
-	current_speed *= _slow_multiplier * _speed_multiplier * terrain_mult
+	current_speed *= _slow_multiplier * _tree_slow_mult * _speed_multiplier * terrain_mult
 
 	# 5. Apply Velocity
 	if direction:
@@ -121,12 +142,58 @@ func _physics_process(delta: float) -> void:
 		if _hazard_recover_timer <= 0.0:
 			_slow_multiplier = 1.0
 
+	# Tree proximity slow debuff — ramps up when player holds ember and stays near BLOCKED tiles
+	if game_manager != null and game_manager._current_holder == GameManager.Holder.PLAYER:
+		_tree_cycle_timer += delta
+		if _tree_cycle_timer >= _tree_cycle_duration:
+			_tree_cycle_timer = 0.0
+			_tree_cycle_duration = randf_range(15.0, 20.0)
+			_tree_adjacent_timer = 0.0
+			_tree_slow_ramp_timer = 0.0
+			_tree_slow_print_timer = 0.0
+			_tree_slow_active = false
+			_tree_slow_mult = 1.0
+			print("TREE SLOW CYCLE RESET: new cycle in %.1f seconds" % _tree_cycle_duration)
+		if _is_adjacent_to_blocked():
+			_tree_adjacent_timer += delta
+			if _tree_adjacent_timer >= 3.0:
+				if not _tree_slow_active:
+					print("TREE SLOW: player held ember near obstacle for 3s, ramping slow 20-60%")
+				_tree_slow_active = true
+				_tree_slow_ramp_timer = minf(_tree_slow_ramp_timer + delta, 2.0)
+				var t := _tree_slow_ramp_timer / 2.0
+				_tree_slow_mult = 1.0 - lerpf(0.2, 0.6, t)
+				_tree_slow_print_timer -= delta
+				if _tree_slow_print_timer <= 0.0:
+					_tree_slow_print_timer = 0.5
+					print("Tree slow: %.0f%%" % ((1.0 - _tree_slow_mult) * 100))
+		else:
+			_tree_adjacent_timer = 0.0
+			if not _tree_slow_active:
+				_tree_slow_mult = 1.0
+	else:
+		_tree_slow_mult = 1.0
+		_tree_adjacent_timer = 0.0
+		_tree_slow_ramp_timer = 0.0
+		_tree_slow_active = false
+
 	if is_on_floor():
 		velocity.y = -1.0
 	else:
 		velocity.y -= 9.8 * delta
 	velocity.y = move_toward(velocity.y, -9.8, 9.8 * delta)
 	move_and_slide()
+
+	# Drive 2D sprite if present
+	if _sprite and not _is_dashing:
+		var is_moving := Vector2(velocity.x, velocity.z).length() > 0.1
+		_sprite.play("walk" if is_moving else "idle")
+		if velocity.x < -0.1:
+			_sprite.flip_h = true
+		elif velocity.x > 0.1:
+			_sprite.flip_h = false
+
+	_update_animation(direction, is_sprinting or _speed_multiplier > 1.05)
 	_try_tag_guardian()
 
 func _drain_stamina_instant(amount: float) -> void:
@@ -195,12 +262,41 @@ func apply_pull(source_pos: Vector3) -> void:
 	_is_being_pulled = false
 	_pull_velocity = Vector3.ZERO
 
+func _update_animation(direction: Vector3, is_running: bool) -> void:
+	if _anim_player == null:
+		return
+	var moving := Vector2(velocity.x, velocity.z).length() > 0.1
+	var target_anim: String
+	if _dash_anim_timer > 0.0:
+		target_anim = "Rig_Medium_General/Use_Item"
+	elif is_running and moving:
+		target_anim = "Running_A"
+	elif moving:
+		target_anim = "Walking_A"
+	else:
+		target_anim = "Rig_Medium_General/Idle_A"
+	if _anim_player.current_animation != target_anim:
+		_anim_player.play(target_anim)
+	if _ranger != null and direction != Vector3.ZERO:
+		var target_angle := atan2(direction.x, direction.z)
+		_ranger.rotation.y = lerp_angle(_ranger.rotation.y, target_angle, 0.15)
+
+func reset_to_spawn() -> void:
+	global_position = _spawn_position
+	velocity = Vector3.ZERO
+
 func apply_phase_dash() -> void:
 	var dir := Vector3(velocity.x, 0.0, velocity.z).normalized()
 	if dir == Vector3.ZERO:
 		return
 	var dist: float = _grid_manager.cell_size * 2.0 if _grid_manager else 2.0
 	global_position += dir * dist
+	_is_dashing = true
+	_dash_anim_timer = 0.5
+	if _sprite:
+		_sprite.play("dash")
+	await get_tree().create_timer(0.5).timeout
+	_is_dashing = false
 
 func _use_selected_powerup() -> void:
 	var type := hotbar.use_selected()
@@ -226,6 +322,21 @@ func _use_selected_powerup() -> void:
 		"phase_dash":
 			apply_phase_dash()
 			print("Player used: Phase Dash")
+
+func _is_adjacent_to_blocked() -> bool:
+	if _grid_manager == null:
+		return false
+	var pos := _grid_manager.world_to_grid(global_position)
+	var is_odd := (pos.y & 1) == 1
+	var offsets: Array[Vector2i]
+	if is_odd:
+		offsets = [Vector2i(1, 0), Vector2i(1, -1), Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(1, 1)]
+	else:
+		offsets = [Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, -1), Vector2i(-1, 0), Vector2i(-1, 1), Vector2i(0, 1)]
+	for off in offsets:
+		if _grid_manager.get_cell(pos + off) == GridManager.CellType.FLOOR_HIGH:
+			return true
+	return false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:

@@ -79,14 +79,11 @@ func wipe_fruits() -> void:
 			fruit["node"].queue_free()
 	_fruits.clear()
 	_active_count = 0
-	block_fruit_spawn()
-	unblock_fruit_spawn()  # starts the 3s async timer, returns immediately
+	_fruit_spawn_blocked = true
+	_unblock_after_delay()
 	print("Fruit Wipe — all fruits cleared, respawn blocked for 3s")
 
-func block_fruit_spawn() -> void:
-	_fruit_spawn_blocked = true
-
-func unblock_fruit_spawn() -> void:
+func _unblock_after_delay() -> void:
 	await get_tree().create_timer(3.0).timeout
 	_fruit_spawn_blocked = false
 

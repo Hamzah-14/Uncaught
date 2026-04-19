@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dy4gpug1t3une"
+path="res://.godot/imported/path-intersectionH.obj-36823ef90a3b3ea28409b0fa5a3989d2.mesh"
+
+[deps]
+
+files=["res://.godot/imported/path-intersectionH.obj-36823ef90a3b3ea28409b0fa5a3989d2.mesh"]
+
+source_file="res://Assets/Assets_unused/Models/OBJ format/path-intersectionH.obj"
+dest_files=["res://.godot/imported/path-intersectionH.obj-36823ef90a3b3ea28409b0fa5a3989d2.mesh", "res://.godot/imported/path-intersectionH.obj-36823ef90a3b3ea28409b0fa5a3989d2.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

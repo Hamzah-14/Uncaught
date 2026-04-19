@@ -8,7 +8,7 @@ data = PackedVector3Array(0, -0.19999999, -1.1546999, -1, -1, -0.5773, 0, -1, -1
 [node name="hex_water2" unique_id=892672117 instance=ExtResource("1_2er6c")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
-[node name="hex_water" parent="." index="0" unique_id=200631464]
+[node name="hex_water" parent="." index="0" unique_id=1044140869]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="hex_water" index="0" unique_id=647853320]

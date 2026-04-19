@@ -1,18 +1,24 @@
 [gd_scene format=3 uid="uid://bxotkmqwmw0oq"]
 
+[ext_resource type="ArrayMesh" uid="uid://b6mue171h7e5d" path="res://Assets/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/obj/tiles/base/hex_grass.obj" id="1_gnih0"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nnquc"]
+albedo_color = Color(1, 0.32941177, 0.42745098, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ofa8f"]
+
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_hn11a"]
 height = 0.35
 radius = 1.12
 
 [node name="hex_tile" type="Node3D" unique_id=78939081]
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=81991988]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1477433298]
+material_override = SubResource("StandardMaterial3D_nnquc")
+mesh = ExtResource("1_gnih0")
+surface_material_override/0 = SubResource("StandardMaterial3D_ofa8f")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1122808026]
+[node name="StaticBody3D" type="StaticBody3D" parent="MeshInstance3D" unique_id=81991988]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MeshInstance3D/StaticBody3D" unique_id=1122808026]
 shape = SubResource("CylinderShape3D_hn11a")
-
-[node name="CSGCylinder3D" type="CSGCylinder3D" parent="." unique_id=1202952980]
-transform = Transform3D(0.8660254, 0, 0.5, 0, 1, 0, -0.5, 0, 0.8660254, 0, 0, 0)
-radius = 1.12
-height = 0.2
-sides = 6

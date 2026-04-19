@@ -46,6 +46,8 @@ func _start_sequence() -> void:
 	if guardian_controller and powerup_manager:
 		guardian_controller.powerup_manager = powerup_manager
 	game_manager.start_bout()
+	if guardian_controller:
+		guardian_controller.configure_for_round(1, 1)
 	var player := get_tree().get_first_node_in_group("player") as PlayerController
 	if player:
 		if hotbar_ui:
@@ -103,7 +105,7 @@ func _fallback_flat_arena() -> void:
 
 func _on_round_changed(round_num: int, capacity: int) -> void:
 	if guardian_controller:
-		guardian_controller.set_hotbar_capacity(capacity)
+		guardian_controller.configure_for_round(round_num, capacity)
 	if powerup_manager:
 		powerup_manager.set_round(round_num)
 	# Reset ember to center for new round

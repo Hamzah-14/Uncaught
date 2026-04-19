@@ -12,7 +12,7 @@ transform = Transform3D(1.2, 0, 0, 0, 1.8, 0, 0, 0, 1.2, 0, 0, 0)
 [node name="hex_grass2" parent="." index="0" unique_id=528530054 instance=ExtResource("2_jldgo")]
 transform = Transform3D(0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 0, 0)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="mountain_B_grass_trees" parent_id_path=PackedInt32Array(55596747) index="0" unique_id=2022684947]
+[node name="StaticBody3D" type="StaticBody3D" parent="mountain_B_grass_trees" parent_id_path=PackedInt32Array(1049897499) index="0" unique_id=2022684947]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="mountain_B_grass_trees/StaticBody3D" index="0" unique_id=105660079]
 shape = SubResource("ConcavePolygonShape3D_jldgo")

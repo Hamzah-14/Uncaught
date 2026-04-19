@@ -32,6 +32,8 @@ func find_path(start: Vector2i, goal: Vector2i) -> Array[Vector2i]:
 			return _reconstruct_path(came_from, current)
 
 		for neighbor in _grid_manager.get_walkable_neighbors(current):
+			if neighbor.x < 0 or neighbor.x >= _grid_manager.width or neighbor.y < 0 or neighbor.y >= _grid_manager.height:
+				continue
 			var tentative_g: float = g_score[current] + 1.0
 			if not g_score.has(neighbor) or tentative_g < g_score[neighbor]:
 				came_from[neighbor] = current
@@ -47,6 +49,8 @@ func _nearest_walkable(target: Vector2i, fallback_toward: Vector2i) -> Vector2i:
 	var best_dist: float = 999.0
 	# Search in expanding ring — check neighbors of target
 	for neighbor in _grid_manager.get_all_neighbors(target):
+		if neighbor.x < 0 or neighbor.x >= _grid_manager.width or neighbor.y < 0 or neighbor.y >= _grid_manager.height:
+			continue
 		if _grid_manager.is_walkable(neighbor):
 			var d = _heuristic(neighbor, fallback_toward)
 			if d < best_dist:

@@ -22,6 +22,7 @@
 [ext_resource type="Script" uid="uid://c3ut5bb8ao43x" path="res://Scripts/UI/HotbarUI.gd" id="18_rw01f"]
 [ext_resource type="Script" uid="uid://di2duwirv4xqg" path="res://Scripts/UI/hud.gd" id="19_s37i7"]
 [ext_resource type="Script" uid="uid://87qaa04r10bq" path="res://Scripts/UI/StaminaBar.gd" id="20_3u63p"]
+[ext_resource type="AudioStream" uid="uid://csdx7evmjnu54" path="res://Assets/Where_the_Hunter_Turns.mp3" id="23_rfjwq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_7mycd"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -289,11 +290,18 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="MultiplierLabel" type="Label" parent="HUD" unique_id=2130871998]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 950.0
+offset_top = 10.0
+offset_right = 990.0
+offset_bottom = 33.0
 
 [node name="HotbarUI" type="CanvasLayer" parent="." unique_id=163284319]
 script = ExtResource("18_rw01f")
 
 [node name="StaminaBar" type="CanvasLayer" parent="." unique_id=1109624818]
 script = ExtResource("20_3u63p")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=794285290]
+stream = ExtResource("23_rfjwq")
+volume_db = -4.5
+autoplay = true

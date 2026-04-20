@@ -12,7 +12,7 @@ signal multiplier_activated
 
 enum Holder { NONE, PLAYER, GUARDIAN }
 
-@export var match_duration: float = 120.0
+@export var match_duration: float = 90.0
 @export var player_score_rate: float = 1.0
 @export var guardian_score_rate: float = 0.75
 
@@ -27,7 +27,16 @@ var _multiplier_active: bool = false
 func _ready() -> void:
 	pass
 
+func _get_duration_for_round(round_num: int) -> float:
+	match round_num:
+		1: return 60.0
+		2: return 90.0
+		3: return 120.0
+		4: return 150.0
+		_: return 180.0
+
 func start_bout() -> void:
+	match_duration = _get_duration_for_round(_current_round)
 	_time_remaining = match_duration
 	_player_score = 0.0
 	_guardian_score = 0.0
@@ -84,11 +93,12 @@ func _end_bout() -> void:
 		_current_round = 1
 
 func reset_round() -> void:
+	match_duration = _get_duration_for_round(_current_round)
 	_time_remaining = match_duration
 	_player_score = 0.0
 	_guardian_score = 0.0
 	var new_capacity: int = min(_current_round, 4)
-	print("[GameManager] Round ", _current_round, " starting — guardian capacity: ", new_capacity)
+	print("[GameManager] Round ", _current_round, " starting — capacity: ", new_capacity, " duration: ", match_duration, "s")
 	emit_signal("round_changed", _current_round, new_capacity)
 	start_next_round()
 

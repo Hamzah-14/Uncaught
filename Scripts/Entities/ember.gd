@@ -1,5 +1,5 @@
 class_name EmberObject
-extends Area3D
+extends Node3D
 
 @export var neutral_wait_time: float = 3.0
 @export var pickup_distance: float = 2.0
@@ -45,7 +45,7 @@ func _pick_up(target: Node3D, holder_type: GameManager.Holder) -> void:
 	target.add_child(self)
 
 	# Position above holder (local space)
-	position = Vector3(0, 1.5, 0)
+	position = Vector3(0, 2.1, 0)
 
 	print("Ember picked up by: ", GameManager.Holder.keys()[holder_type])
 
@@ -55,7 +55,7 @@ func drop() -> void:
 		return
 	
 	# Bypass transform propagation lag — use holder position directly
-	var world_pos = _holder.global_position + Vector3(0, 1.5, 0)
+	var world_pos = _holder.global_position + Vector3(0, 2.3, 0)
 	
 	_holder.remove_child(self)
 	_arena.add_child(self)
@@ -79,7 +79,7 @@ func transfer(new_holder: Node3D, holder_type: GameManager.Holder) -> void:
 	var old_holder = _holder
 	_holder.remove_child(self)
 	new_holder.add_child(self)
-	position = Vector3(0, 1.5, 0)
+	position = Vector3(0, 2.1, 0)
 	_holder = new_holder
 	_immune_holder = new_holder
 	_game_manager.set_ember_holder(holder_type)

@@ -98,6 +98,8 @@ func _physics_process(delta: float) -> void:
 				_is_exhausted = false
 
 	var current_speed := walk_speed * 1.26 if is_sprinting else walk_speed
+	if _is_exhausted:
+		current_speed *= 0.95
 
 	# 4. Apply multipliers
 	var terrain_mult: float = 1.0

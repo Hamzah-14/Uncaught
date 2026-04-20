@@ -35,6 +35,16 @@ func setup(game_manager: GameManager) -> void:
 	_multiplier_label = get_node_or_null("MultiplierLabel")
 	if _multiplier_label:
 		_multiplier_label.visible = false
+		_multiplier_label.add_theme_font_size_override("font_size", 22)
+		_multiplier_label.anchor_left = 1.0
+		_multiplier_label.anchor_right = 1.0
+		_multiplier_label.anchor_top = 0.0
+		_multiplier_label.anchor_bottom = 0.0
+		_multiplier_label.offset_left = -320.0
+		_multiplier_label.offset_right = -10.0
+		_multiplier_label.offset_top = 10.0
+		_multiplier_label.offset_bottom = 50.0
+		_multiplier_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 	if _timer_bar:
 		_timer_bar.max_value = game_manager.match_duration

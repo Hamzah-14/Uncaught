@@ -161,6 +161,8 @@ func _spawn_one() -> void:
 	]
 	if _current_round >= 2:
 		pool.append(PowerupType.FRUIT_WIPE)
+		pool.append(PowerupType.FRUIT_WIPE)
+		pool.append(PowerupType.PULL)
 		pool.append(PowerupType.PULL)
 
 	var type: PowerupType = pool[randi() % pool.size()] as PowerupType

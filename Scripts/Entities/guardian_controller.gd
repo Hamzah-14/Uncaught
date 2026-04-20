@@ -35,6 +35,7 @@ var _last_flee_pos: Vector2i = Vector2i.ZERO
 var _field_update_interval: float = 0.4
 var _last_player_grid_pos: Vector2i = Vector2i.ZERO
 var _player_direction: Vector2i = Vector2i.ZERO
+var _prev_player_direction: Vector2i = Vector2i.ZERO
 # Phase Dash cooldown and distance-delta tracking
 var _phase_dash_cooldown: float = 0.0
 var _prev_sampled_distance: float = 0.0
@@ -51,7 +52,7 @@ var _player_camp_pos: Vector2i = Vector2i(-1, -1)
 var _is_flanking: bool = false
 const _CAMP_THRESHOLD: float = 2.5
 var _use_item_anim_timer: float = 0.0
-var _spawn_anim_timer: float = 0.0  # spawn anims disabled — causes invisible bug
+var _spawn_anim_timer: float = 1.0  # flag only — zeroed by animation_finished signal
 var _spawn_anim: String = "Rig_Medium_General/Spawn_Ground"
 var _tree_boost_mult: float = 1.0
 var _on_collapse_tile: bool = false
@@ -91,6 +92,9 @@ func _ready() -> void:
 	add_child(_hotbar)
 	# Capacity 0 by default — set via set_hotbar_capacity() when rounds advance.
 
+	if _anim_player:
+		_anim_player.animation_finished.connect(_on_animation_finished)
+
 	print("Grid manager in guardian: ", _grid_manager)
 	print("Potential field grid manager: ", _potential_field._grid_manager)
 func _physics_process(delta: float) -> void:
@@ -128,10 +132,19 @@ func _physics_process(delta: float) -> void:
 	var player_grid_pos: Vector2i = _grid_manager.world_to_grid(_player.global_position)
 
 	# Track player movement direction
+	_prev_player_direction = _player_direction
 	_player_direction = player_grid_pos - _last_player_grid_pos
 	_last_player_grid_pos = player_grid_pos
 
 	var distance_to_player := _hex_distance(my_grid_pos, player_grid_pos)
+
+	# Force immediate repath when player jukes sharply while close
+	var dir_a := Vector2(float(_player_direction.x), float(_player_direction.y))
+	var dir_b := Vector2(float(_prev_player_direction.x), float(_prev_player_direction.y))
+	if dir_a.length() > 0.01 and dir_b.length() > 0.01 \
+			and dir_a.normalized().dot(dir_b.normalized()) < -0.2 \
+			and distance_to_player <= 4.0:
+		_path_update_timer = 0.0
 
 	# Collapse tile step-on — trigger burst when Guardian walks onto one
 	if _grid_manager.get_cell(my_grid_pos) == GridManager.CellType.HAZARD_COLLAPSE:
@@ -227,6 +240,11 @@ func _physics_process(delta: float) -> void:
 		#print("My pos: ", my_grid_pos)
 		#print("Path size: ", _current_path.size())
 		#print("Danger field size: ", _danger_field.size())
+		# Clear stale collapse target if tile is no longer a collapse tile
+		if _seeking_collapse_tile != Vector2i(-1, -1) \
+				and _grid_manager.get_cell(_seeking_collapse_tile) != GridManager.CellType.HAZARD_COLLAPSE:
+			_seeking_collapse_tile = Vector2i(-1, -1)
+
 		# Proactive seeking override — redirect toward a valued powerup if one was chosen
 		if _seeking_powerup_pos != Vector2i(-1, -1):
 			if powerup_manager and powerup_manager.has_powerup_at(_seeking_powerup_pos):
@@ -235,12 +253,12 @@ func _physics_process(delta: float) -> void:
 				_seeking_powerup_pos = Vector2i(-1, -1)
 		# Collapse tile override — lower priority, single-cycle only
 		elif _seeking_collapse_tile != Vector2i(-1, -1):
-			if not _collapse_burst_active and _collapse_cooldown_timer <= 0.0 \
-					and _grid_manager.get_cell(_seeking_collapse_tile) == GridManager.CellType.HAZARD_COLLAPSE:
+			if not _collapse_burst_active and _collapse_cooldown_timer <= 0.0:
 				goal = _seeking_collapse_tile
+				print("Guardian detour to collapse tile — burst incoming")
 			_seeking_collapse_tile = Vector2i(-1, -1)
 		else:
-			_evaluate_collapse_seeking(my_grid_pos, goal, distance_to_player)
+			_evaluate_collapse_seeking(my_grid_pos, goal, player_grid_pos, distance_to_player)
 		_current_path = _astar.find_path(my_grid_pos, goal)
 	_tree_boost_mult = 1.25 if _is_adjacent_to_blocked_g(my_grid_pos) else 1.0
 	_follow_path(delta, my_grid_pos)
@@ -278,8 +296,7 @@ func _physics_process(delta: float) -> void:
 
 	if _use_item_anim_timer > 0.0:
 		_use_item_anim_timer -= delta
-	#if _spawn_anim_timer > 0.0:
-		#_spawn_anim_timer -= delta
+	# spawn anim duration driven by animation_finished signal, not a timer
 	_update_animation()
 	_handle_tag()
 
@@ -347,9 +364,9 @@ func _update_animation() -> void:
 		return
 	var moving := Vector2(velocity.x, velocity.z).length() > 0.1
 	var target_anim: String
-	#if _spawn_anim_timer > 0.0:
-		#target_anim = _spawn_anim
-	if _use_item_anim_timer > 0.0:
+	if _spawn_anim_timer > 0.0:
+		target_anim = _spawn_anim
+	elif _use_item_anim_timer > 0.0:
 		target_anim = "Rig_Medium_General/Use_Item"
 	elif moving:
 		var is_fast := _state_machine.current_mode == GuardianStateMachine.Mode.AGGRESSIVE \
@@ -358,18 +375,20 @@ func _update_animation() -> void:
 	else:
 		target_anim = "Rig_Medium_General/Idle_B"
 	if _anim_player.current_animation != target_anim:
-		#if _anim_player.current_animation in ["Rig_Medium_General/Spawn_Air", "Rig_Medium_General/Spawn_Ground"]:
-			#_anim_player.stop(true)
 		_anim_player.play(target_anim)
 	if _barbarian != null and (velocity.x != 0.0 or velocity.z != 0.0):
 		var target_angle := atan2(velocity.x, velocity.z)
 		_barbarian.rotation.y = lerp_angle(_barbarian.rotation.y, target_angle, 0.15)
 
+func _on_animation_finished(anim_name: StringName) -> void:
+	if anim_name in ["Rig_Medium_General/Spawn_Air", "Rig_Medium_General/Spawn_Ground"]:
+		_spawn_anim_timer = 0.0
+
 func reset_to_spawn() -> void:
 	global_position = _spawn_position
 	velocity = Vector3.ZERO
-	#_spawn_anim_timer = 1.5
-	#_spawn_anim = "Rig_Medium_General/Spawn_Air"
+	_spawn_anim_timer = 1.0  # flag only — actual end driven by animation_finished
+	_spawn_anim = "Rig_Medium_General/Spawn_Air"
 
 func apply_slow(amount: float, duration: float) -> void:
 	_slow_multiplier = 1.0 - amount
@@ -541,20 +560,22 @@ func _get_flank_goal(my_pos: Vector2i, player_pos: Vector2i) -> Vector2i:
 			best = n
 	return best
 
-func _evaluate_collapse_seeking(my_grid_pos: Vector2i, main_goal: Vector2i, distance_to_player: float) -> void:
+func _evaluate_collapse_seeking(my_grid_pos: Vector2i, main_goal: Vector2i, player_grid_pos: Vector2i, distance_to_player: float) -> void:
 	if _collapse_burst_active or _collapse_cooldown_timer > 0.0:
 		return
 	if distance_to_player <= 3.0:
 		return
-	# Don't seek while fleeing urgently with ember
-	if _game_manager._current_holder == GameManager.Holder.GUARDIAN \
-			and _state_machine.current_mode == GuardianStateMachine.Mode.FLEE:
-		return
+
+	var is_fleeing := _game_manager._current_holder == GameManager.Holder.GUARDIAN \
+			and _state_machine.current_mode == GuardianStateMachine.Mode.FLEE
+	# Fleeing: tighter detour budget; chasing: allow 2 extra steps
+	var max_overhead := 1.0 if is_fleeing else 2.0
 
 	var to_goal := Vector2(float(main_goal.x - my_grid_pos.x), float(main_goal.y - my_grid_pos.y))
 	var goal_len := to_goal.length()
 	var goal_dir := to_goal / goal_len if goal_len > 0.01 else Vector2.ZERO
 	var direct_dist := _hex_distance(my_grid_pos, main_goal)
+	var dist_from_player := _hex_distance(my_grid_pos, player_grid_pos)
 
 	var best_score: float = -1.0
 	var best_tile: Vector2i = Vector2i(-1, -1)
@@ -570,15 +591,27 @@ func _evaluate_collapse_seeking(my_grid_pos: Vector2i, main_goal: Vector2i, dist
 			var dist_to_tile := _hex_distance(my_grid_pos, candidate)
 			if dist_to_tile < 0.5 or dist_to_tile > 3.0:
 				continue
-			# Reject tiles behind the guardian relative to the current goal
+			# Reject tiles behind guardian relative to the strategic goal direction
 			var to_tile := Vector2(float(candidate.x - my_grid_pos.x), float(candidate.y - my_grid_pos.y))
 			if goal_dir.length() > 0.01 and to_tile.dot(goal_dir) < 0.0:
 				continue
-			# Reject if detour adds more than 2 extra steps
+			# Reject if detour cost exceeds mode-specific budget
 			var detour_dist := dist_to_tile + _hex_distance(candidate, main_goal)
 			var overhead := detour_dist - direct_dist
-			if overhead > 2.0:
+			if overhead > max_overhead:
 				continue
+			# Flee-mode safety checks
+			if is_fleeing:
+				# Must not move the guardian closer to the player
+				if _hex_distance(candidate, player_grid_pos) < dist_from_player:
+					continue
+				# Must have enough escape routes (not a dead end or narrow corridor)
+				if _grid_manager.get_walkable_neighbors(candidate).size() < 3:
+					continue
+				# Reject tiles near grid edges — already penalised in flee goal scoring
+				if candidate.x <= 1 or candidate.x >= _grid_manager.width - 2 \
+						or candidate.y <= 1 or candidate.y >= _grid_manager.height - 2:
+					continue
 			var score := 5.5 - dist_to_tile - overhead * 0.6
 			if score > best_score:
 				best_score = score
@@ -586,7 +619,6 @@ func _evaluate_collapse_seeking(my_grid_pos: Vector2i, main_goal: Vector2i, dist
 
 	if best_score > 2.5:
 		_seeking_collapse_tile = best_tile
-		print("Guardian detour to collapse tile — burst incoming")
 
 func _evaluate_powerup_seeking() -> void:
 	if powerup_manager == null or _hotbar == null:

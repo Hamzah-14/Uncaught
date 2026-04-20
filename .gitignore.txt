@@ -8,5 +8,5 @@ Thumbs.db
 Desktop.ini
 
 # Optional: Ignore export templates/builds if you create a builds folder later
-builds/
+builds/sss
 exports/
